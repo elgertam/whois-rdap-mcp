@@ -13,7 +13,7 @@ class Config:
     
     # Server configuration
     bind_host: str = field(default_factory=lambda: os.getenv("BIND_HOST", "0.0.0.0"))
-    bind_port: int = field(default_factory=lambda: int(os.getenv("BIND_PORT", "8000")))
+    bind_port: int = field(default_factory=lambda: int(os.getenv("BIND_PORT", "5000")))
     
     # Timeout configuration (seconds)
     whois_timeout: int = field(default_factory=lambda: int(os.getenv("WHOIS_TIMEOUT", "30")))
