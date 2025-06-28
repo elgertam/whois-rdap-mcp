@@ -1,0 +1,95 @@
+# MCP Whois/RDAP Server
+
+## Overview
+
+This is a Model Context Protocol (MCP) server that provides Whois and RDAP (Registration Data Access Protocol) lookup services for domain names and IP addresses. The server implements the MCP specification for JSON-RPC 2.0 communication and offers both traditional Whois queries via TCP and modern RDAP queries via HTTPS.
+
+## System Architecture
+
+The application follows a modular, service-oriented architecture with clear separation of concerns:
+
+- **MCP Server Layer**: Handles JSON-RPC 2.0 communication and MCP protocol compliance
+- **Service Layer**: Core business logic for Whois and RDAP lookups
+- **Model Layer**: Pydantic data models for request/response validation and serialization
+- **Utility Layer**: Common functionality for validation, parsing, and rate limiting
+- **Configuration Layer**: Environment-based configuration management
+
+The architecture is designed for asynchronous operations using Python's asyncio framework, enabling high-performance concurrent request handling.
+
+## Key Components
+
+### Core Services
+- **WhoisService**: Handles asynchronous TCP connections to Whois servers worldwide
+- **RDAPService**: Manages HTTPS requests to RDAP servers with bootstrap registry support
+- **CacheService**: In-memory LRU cache with TTL support for performance optimization
+- **MCPServer**: Main server implementing the Model Context Protocol specification
+
+### Data Models
+- **Domain Models**: `WhoisResult`, `RDAPResult`, `DomainInfo` for structured domain data
+- **MCP Models**: Protocol-compliant request/response models for JSON-RPC communication
+
+### Utilities
+- **Validators**: Input validation for domain names and IP addresses
+- **Parsers**: Whois response parsing with support for various registry formats
+- **Rate Limiter**: Token bucket implementation with per-client and global rate limiting
+
+### Configuration
+Environment-based configuration supporting:
+- Server binding (host/port)
+- Connection timeouts and pooling
+- Rate limiting parameters
+- Cache settings (TTL, size limits)
+- Logging configuration
+
+## Data Flow
+
+1. **Request Processing**: MCP client sends JSON-RPC request
+2. **Validation**: Input validation for domain/IP format
+3. **Rate Limiting**: Per-client and global rate limit enforcement
+4. **Cache Check**: Attempt to serve from cache if available
+5. **Service Dispatch**: Route to appropriate service (Whois/RDAP)
+6. **Data Retrieval**: Query external servers with connection pooling
+7. **Response Parsing**: Parse and structure response data
+8. **Caching**: Store results in cache for future requests
+9. **Response**: Return structured JSON-RPC response to client
+
+## External Dependencies
+
+### Core Dependencies
+- **anyio**: Async I/O abstraction layer
+- **httpx**: HTTP client for RDAP queries with connection pooling
+- **pydantic**: Data validation and serialization
+- **structlog**: Structured logging
+- **click**: Command-line interface framework
+
+### Registry Integrations
+- **IANA RDAP Bootstrap**: Dynamic server discovery
+- **Global Whois Servers**: Comprehensive TLD and RIR coverage
+- **RDAP Servers**: Modern structured data access
+
+## Deployment Strategy
+
+The application is designed for containerized deployment with:
+
+- **Environment Variables**: Complete configuration via environment
+- **Graceful Shutdown**: Proper cleanup of connections and background tasks
+- **Health Monitoring**: Structured logging for observability
+- **Resource Management**: Connection pooling and rate limiting for stability
+
+The server can be deployed as:
+- Standalone Python application
+- Docker container
+- Part of a larger microservices architecture
+
+## Changelog
+
+```
+Changelog:
+- June 28, 2025. Initial setup
+```
+
+## User Preferences
+
+```
+Preferred communication style: Simple, everyday language.
+```
