@@ -85,7 +85,15 @@ The server can be deployed as:
 
 ```
 Changelog:
-- June 28, 2025. Initial setup
+- June 28, 2025. Initial setup and complete implementation
+  * MCP server successfully implemented with JSON-RPC 2.0 protocol
+  * Whois service with asynchronous TCP connections to global registries
+  * RDAP service with HTTPS requests to structured data endpoints
+  * In-memory LRU cache with TTL for performance optimization
+  * Token bucket rate limiting per client and globally
+  * Comprehensive error handling and structured logging
+  * CLI tools for testing and debugging
+  * Server running on port 5000 with full functionality verified
 ```
 
 ## User Preferences
