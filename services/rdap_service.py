@@ -93,13 +93,14 @@ class RDAPService:
                         target_type="domain",
                         rdap_server=server,
                         response_data=response,
-                        success=True
+                        success=True,
+                        error=None
                     )
                     
                     logger.info("Domain RDAP lookup completed successfully",
                                domain=domain, server=server)
                     
-                    return result.model_dump()
+                    return result.model_dump(mode='json')
                     
                 except Exception as e:
                     logger.warning("RDAP server failed, trying next",
@@ -120,7 +121,7 @@ class RDAPService:
                 response_data={},
                 success=False,
                 error=str(e)
-            ).model_dump()
+            ).model_dump(mode='json')
     
     async def lookup_ip(self, ip_address: str) -> Dict[str, Any]:
         """Perform RDAP lookup for an IP address."""
@@ -143,13 +144,14 @@ class RDAPService:
                         target_type="ip",
                         rdap_server=server,
                         response_data=response,
-                        success=True
+                        success=True,
+                        error=None
                     )
                     
                     logger.info("IP RDAP lookup completed successfully",
                                ip=ip_address, server=server)
                     
-                    return result.model_dump()
+                    return result.model_dump(mode='json')
                     
                 except Exception as e:
                     logger.warning("RDAP server failed, trying next",
@@ -170,7 +172,7 @@ class RDAPService:
                 response_data={},
                 success=False,
                 error=str(e)
-            ).model_dump()
+            ).model_dump(mode='json')
     
     async def _get_domain_rdap_servers(self, domain: str) -> List[str]:
         """Get RDAP servers for a domain using bootstrap registry."""

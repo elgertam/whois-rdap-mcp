@@ -94,6 +94,7 @@ class WhoisService:
         
         logger.info("Starting domain whois lookup", domain=domain)
         
+        whois_server = "unknown"
         try:
             # Get appropriate Whois server
             whois_server = self._get_domain_whois_server(domain)
@@ -110,13 +111,14 @@ class WhoisService:
                 whois_server=whois_server,
                 raw_response=raw_response,
                 parsed_data=parsed_result,
-                success=True
+                success=True,
+                error=None
             )
             
             logger.info("Domain whois lookup completed successfully", 
                        domain=domain, server=whois_server)
             
-            return result.model_dump()
+            return result.model_dump(mode='json')
             
         except Exception as e:
             logger.error("Domain whois lookup failed", 
@@ -125,12 +127,12 @@ class WhoisService:
             return WhoisResult(
                 target=domain,
                 target_type="domain", 
-                whois_server=whois_server if 'whois_server' in locals() else "unknown",
+                whois_server=whois_server,
                 raw_response="",
                 parsed_data={},
                 success=False,
                 error=str(e)
-            ).model_dump()
+            ).model_dump(mode='json')
     
     async def lookup_ip(self, ip_address: str) -> Dict[str, Any]:
         """Perform Whois lookup for an IP address."""
@@ -139,6 +141,7 @@ class WhoisService:
         
         logger.info("Starting IP whois lookup", ip=ip_address)
         
+        whois_server = "unknown"
         try:
             # Get appropriate Whois server for IP
             whois_server = self._get_ip_whois_server(ip_address)
@@ -155,13 +158,14 @@ class WhoisService:
                 whois_server=whois_server,
                 raw_response=raw_response,
                 parsed_data=parsed_result,
-                success=True
+                success=True,
+                error=None
             )
             
             logger.info("IP whois lookup completed successfully", 
                        ip=ip_address, server=whois_server)
             
-            return result.model_dump()
+            return result.model_dump(mode='json')
             
         except Exception as e:
             logger.error("IP whois lookup failed", 
@@ -170,12 +174,12 @@ class WhoisService:
             return WhoisResult(
                 target=ip_address,
                 target_type="ip",
-                whois_server=whois_server if 'whois_server' in locals() else "unknown",
+                whois_server=whois_server,
                 raw_response="",
                 parsed_data={},
                 success=False,
                 error=str(e)
-            ).model_dump()
+            ).model_dump(mode='json')
     
     def _get_domain_whois_server(self, domain: str) -> str:
         """Get the appropriate Whois server for a domain."""
@@ -235,7 +239,7 @@ class WhoisService:
         """Query a Whois server and return the response."""
         try:
             # Create TCP connection with timeout
-            async with anyio.move_on_after(self.config.whois_timeout):
+            with anyio.move_on_after(self.config.whois_timeout) as cancel_scope:
                 stream = await anyio.connect_tcp(server, 43)
                 
                 async with stream:
@@ -260,9 +264,13 @@ class WhoisService:
                         raise ValueError("Empty response from Whois server")
                     
                     return response
+            
+            if cancel_scope.cancelled_caught:
+                raise TimeoutError(f"Whois query timeout for {server}")
+            
+            # This should not be reached, but return empty if no response
+            return ""
                     
-        except anyio.get_cancelled_exc_class():
-            raise TimeoutError(f"Whois query timeout for {server}")
         except OSError as e:
             raise ConnectionError(f"Failed to connect to {server}: {e}")
         except Exception as e:
