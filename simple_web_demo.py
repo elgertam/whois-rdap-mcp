@@ -25,6 +25,7 @@ class SimpleDemo(BaseHTTPRequestHandler):
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="utf-8">
     <title>MCP Whois/RDAP Server Demo</title>
     <style>
         body { font-family: Arial, sans-serif; margin: 40px; background: #f5f5f5; }
@@ -47,9 +48,9 @@ class SimpleDemo(BaseHTTPRequestHandler):
         <p><strong>Model Context Protocol Server for Domain and IP Address Lookups</strong></p>
         
         <div class="status success">
-            <strong>✓ Server Status:</strong> MCP server is running on port 5000<br>
-            <strong>✓ Protocol:</strong> JSON-RPC 2.0 over TCP<br>
-            <strong>✓ Data Sources:</strong> Real Whois registries and RDAP endpoints
+            <strong>Server Status:</strong> MCP server is running on port 5000<br>
+            <strong>Protocol:</strong> JSON-RPC 2.0 over TCP<br>
+            <strong>Data Sources:</strong> Real Whois registries and RDAP endpoints
         </div>
         
         <h2>Server Features</h2>
@@ -77,12 +78,12 @@ class SimpleDemo(BaseHTTPRequestHandler):
         <h2>Test Results</h2>
         <div class="info">
             <strong>Comprehensive Test Suite: 7/8 tests passed</strong><br>
-            ✓ Module imports and configuration<br>
-            ✓ MCP protocol compliance (JSON-RPC 2.0)<br>
-            ✓ Real Whois data retrieval from registries<br>
-            ✓ RDAP structured data access<br>
-            ✓ Cache and rate limiting systems<br>
-            ✓ Authentic data integration verified
+            • Module imports and configuration<br>
+            • MCP protocol compliance (JSON-RPC 2.0)<br>
+            • Real Whois data retrieval from registries<br>
+            • RDAP structured data access<br>
+            • Cache and rate limiting systems<br>
+            • Authentic data integration verified
         </div>
         
         <h2>Real-World Data Sources</h2>
@@ -129,9 +130,9 @@ class SimpleDemo(BaseHTTPRequestHandler):
             self.wfile.write(result.encode('utf-8'))
         except Exception as e:
             self.send_response(500)
-            self.send_header('Content-type', 'text/plain')
+            self.send_header('Content-type', 'text/plain; charset=utf-8')
             self.end_headers()
-            self.wfile.write(f"MCP test failed: {str(e)}".encode())
+            self.wfile.write(f"MCP test failed: {str(e)}".encode('utf-8'))
     
     async def _perform_mcp_test(self):
         """Perform actual MCP connection test."""
@@ -151,9 +152,9 @@ class SimpleDemo(BaseHTTPRequestHandler):
                     }
                 }
                 
-                await stream.send((json.dumps(init_request) + '\n').encode())
+                await stream.send((json.dumps(init_request) + '\n').encode('utf-8'))
                 response = await stream.receive(4096)
-                init_response = json.loads(response.decode())
+                init_response = json.loads(response.decode('utf-8'))
                 
                 server_info = init_response['result']['serverInfo']
                 
@@ -164,13 +165,13 @@ class SimpleDemo(BaseHTTPRequestHandler):
                     "method": "tools/list"
                 }
                 
-                await stream.send((json.dumps(tools_request) + '\n').encode())
+                await stream.send((json.dumps(tools_request) + '\n').encode('utf-8'))
                 response = await stream.receive(4096)
-                tools_response = json.loads(response.decode())
+                tools_response = json.loads(response.decode('utf-8'))
                 
                 tools = [tool['name'] for tool in tools_response['result']['tools']]
                 
-                return f"""✓ MCP Connection Successful!
+                return f"""MCP Connection Successful!
 Server: {server_info['name']} v{server_info['version']}
 Available Tools: {', '.join(tools)}
 Protocol: JSON-RPC 2.0 over TCP
@@ -178,14 +179,14 @@ Port: 5000
 Status: Fully Operational"""
                 
         except Exception as e:
-            return f"✗ MCP Connection Failed: {str(e)}"
+            return f"MCP Connection Failed: {str(e)}"
     
     def _serve_404(self):
         """Serve 404 page."""
         self.send_response(404)
-        self.send_header('Content-type', 'text/html')
+        self.send_header('Content-type', 'text/html; charset=utf-8')
         self.end_headers()
-        self.wfile.write(b'<h1>404 Not Found</h1>')
+        self.wfile.write('<h1>404 Not Found</h1>'.encode('utf-8'))
     
     def log_message(self, format, *args):
         """Override to reduce logging noise."""
