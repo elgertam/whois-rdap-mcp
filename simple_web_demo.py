@@ -43,7 +43,7 @@ class SimpleDemo(BaseHTTPRequestHandler):
 </head>
 <body>
     <div class="container">
-        <h1>🚀 MCP Whois/RDAP Server</h1>
+        <h1>MCP Whois/RDAP Server</h1>
         <p><strong>Model Context Protocol Server for Domain and IP Address Lookups</strong></p>
         
         <div class="status success">
@@ -52,29 +52,29 @@ class SimpleDemo(BaseHTTPRequestHandler):
             <strong>✓ Data Sources:</strong> Real Whois registries and RDAP endpoints
         </div>
         
-        <h2>🎯 Server Features</h2>
+        <h2>Server Features</h2>
         <div class="feature"><strong>Whois Lookups:</strong> Asynchronous TCP connections to global registries (Verisign, ARIN, RIPE, etc.)</div>
         <div class="feature"><strong>RDAP Lookups:</strong> HTTPS requests to structured data endpoints with bootstrap discovery</div>
         <div class="feature"><strong>Caching System:</strong> In-memory LRU cache with TTL for performance optimization</div>
         <div class="feature"><strong>Rate Limiting:</strong> Token bucket system to protect registry servers</div>
         <div class="feature"><strong>Error Handling:</strong> Comprehensive error handling with structured logging</div>
         
-        <h2>🔧 Available Tools</h2>
+        <h2>Available Tools</h2>
         <div class="endpoint">whois_lookup(target, use_cache=true)</div>
         <div class="endpoint">rdap_lookup(target, use_cache=true)</div>
         
-        <h2>📝 Protocol Endpoints</h2>
+        <h2>Protocol Endpoints</h2>
         <div class="endpoint">initialize - Initialize MCP connection</div>
         <div class="endpoint">tools/list - List available tools</div>
         <div class="endpoint">tools/call - Execute whois_lookup or rdap_lookup</div>
         <div class="endpoint">resources/list - List available resources</div>
         <div class="endpoint">resources/read - Read whois:// or rdap:// resources</div>
         
-        <h2>✅ Verified Functionality</h2>
+        <h2>Verified Functionality</h2>
         <button onclick="testConnection()">Test MCP Connection</button>
         <div id="testResult"></div>
         
-        <h2>📊 Test Results</h2>
+        <h2>Test Results</h2>
         <div class="info">
             <strong>Comprehensive Test Suite: 7/8 tests passed</strong><br>
             ✓ Module imports and configuration<br>
@@ -85,7 +85,7 @@ class SimpleDemo(BaseHTTPRequestHandler):
             ✓ Authentic data integration verified
         </div>
         
-        <h2>🌐 Real-World Data Sources</h2>
+        <h2>Real-World Data Sources</h2>
         <div class="info">
             <strong>Successfully tested with:</strong><br>
             • whois.verisign-grs.com (Verisign Whois)<br>
@@ -114,18 +114,19 @@ class SimpleDemo(BaseHTTPRequestHandler):
         """
         
         self.send_response(200)
-        self.send_header('Content-type', 'text/html')
+        self.send_header('Content-type', 'text/html; charset=utf-8')
+        self.send_header('Cache-Control', 'no-cache')
         self.end_headers()
-        self.wfile.write(html.encode())
+        self.wfile.write(html.encode('utf-8'))
     
     def _test_mcp_connection(self):
         """Test connection to MCP server."""
         try:
             result = asyncio.run(self._perform_mcp_test())
             self.send_response(200)
-            self.send_header('Content-type', 'text/plain')
+            self.send_header('Content-type', 'text/plain; charset=utf-8')
             self.end_headers()
-            self.wfile.write(result.encode())
+            self.wfile.write(result.encode('utf-8'))
         except Exception as e:
             self.send_response(500)
             self.send_header('Content-type', 'text/plain')
