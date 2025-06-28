@@ -48,7 +48,7 @@ class SimpleDemo(BaseHTTPRequestHandler):
         <p><strong>Model Context Protocol Server for Domain and IP Address Lookups</strong></p>
         
         <div class="status success">
-            <strong>Server Status:</strong> MCP server is running on port 5000<br>
+            <strong>Server Status:</strong> MCP server is running on port 5001<br>
             <strong>Protocol:</strong> JSON-RPC 2.0 over TCP<br>
             <strong>Data Sources:</strong> Real Whois registries and RDAP endpoints
         </div>
