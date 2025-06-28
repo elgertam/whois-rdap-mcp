@@ -313,7 +313,7 @@ class MCPServer:
             return {
                 "content": [{
                     "type": "text",
-                    "text": json.dumps(result, indent=2)
+                    "text": json.dumps(result, indent=2, ensure_ascii=False)
                 }]
             }
             
