@@ -5,7 +5,7 @@ Implements in-memory LRU cache with TTL support.
 
 import asyncio
 import time
-from typing import Dict, Any, Optional, Tuple
+from typing import Dict, Any, Optional, Tuple, List
 import structlog
 
 from config import Config

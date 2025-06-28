@@ -113,10 +113,12 @@ class MCPServer:
     async def start(self):
         """Start the MCP server."""
         try:
-            async with anyio.create_tcp_listener(
+            listener = await anyio.create_tcp_listener(
                 local_host=self.config.bind_host,
                 local_port=self.config.bind_port
-            ) as listener:
+            )
+            
+            async with listener:
                 logger.info("MCP server listening", 
                            host=self.config.bind_host, 
                            port=self.config.bind_port)
@@ -127,7 +129,7 @@ class MCPServer:
             logger.error("Failed to start MCP server", error=str(e))
             raise
     
-    async def _handle_client(self, stream: anyio.abc.SocketStream):
+    async def _handle_client(self, stream):
         """Handle individual client connections."""
         client_id = str(uuid.uuid4())[:8]
         logger.info("New client connected", client_id=client_id)
@@ -151,7 +153,7 @@ class MCPServer:
             logger.error("Error handling client", 
                         client_id=client_id, error=str(e))
     
-    async def _read_message(self, stream: anyio.abc.SocketStream) -> Optional[Dict[str, Any]]:
+    async def _read_message(self, stream) -> Optional[Dict[str, Any]]:
         """Read JSON-RPC message from stream."""
         try:
             # Read until newline (simple framing)
@@ -170,7 +172,7 @@ class MCPServer:
             logger.warning("Failed to read message", error=str(e))
             return None
     
-    async def _send_message(self, stream: anyio.abc.SocketStream, message: Dict[str, Any]):
+    async def _send_message(self, stream, message: Dict[str, Any]):
         """Send JSON-RPC message to stream."""
         try:
             data = json.dumps(message) + '\n'
@@ -190,15 +192,15 @@ class MCPServer:
             
             # Handle different MCP methods
             if request.method == "initialize":
-                result = await self._handle_initialize(request.params)
+                result = await self._handle_initialize(request.params or {})
             elif request.method == "resources/list":
                 result = await self._handle_list_resources()
             elif request.method == "resources/read":
-                result = await self._handle_read_resource(request.params)
+                result = await self._handle_read_resource(request.params or {})
             elif request.method == "tools/list":
                 result = await self._handle_list_tools()
             elif request.method == "tools/call":
-                result = await self._handle_call_tool(request.params, client_id)
+                result = await self._handle_call_tool(request.params or {}, client_id)
             else:
                 raise ValueError(f"Unknown method: {request.method}")
             

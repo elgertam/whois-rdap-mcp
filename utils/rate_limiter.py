@@ -4,7 +4,7 @@ Rate limiting utilities to respect registry policies.
 
 import asyncio
 import time
-from typing import Dict, DefaultDict
+from typing import Dict, DefaultDict, Any, Optional
 from collections import defaultdict
 import structlog
 
@@ -116,7 +116,7 @@ class RateLimiter:
         
         self.request_counts[client_id] += 1
     
-    async def get_stats(self, client_id: str = None) -> Dict[str, Any]:
+    async def get_stats(self, client_id: Optional[str] = None) -> Dict[str, Any]:
         """Get rate limiting statistics."""
         if client_id:
             # Per-client stats

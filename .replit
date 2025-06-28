@@ -24,3 +24,7 @@ author = "agent"
 task = "shell.exec"
 args = "pip install pydantic anyio httpx structlog click && python main.py"
 waitForPort = 5000
+
+[[ports]]
+localPort = 8000
+externalPort = 80
