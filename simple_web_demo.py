@@ -137,7 +137,7 @@ class SimpleDemo(BaseHTTPRequestHandler):
     async def _perform_mcp_test(self):
         """Perform actual MCP connection test."""
         try:
-            stream = await anyio.connect_tcp("localhost", 5000)
+            stream = await anyio.connect_tcp("localhost", 5001)
             
             async with stream:
                 # Initialize
@@ -175,7 +175,7 @@ class SimpleDemo(BaseHTTPRequestHandler):
 Server: {server_info['name']} v{server_info['version']}
 Available Tools: {', '.join(tools)}
 Protocol: JSON-RPC 2.0 over TCP
-Port: 5000
+Port: 5001
 Status: Fully Operational"""
                 
         except Exception as e:
@@ -194,8 +194,8 @@ Status: Fully Operational"""
 
 def start_demo():
     """Start the demo web server."""
-    server = HTTPServer(('0.0.0.0', 8000), SimpleDemo)
-    print("Demo web interface started on http://0.0.0.0:8000")
+    server = HTTPServer(('0.0.0.0', 5000), SimpleDemo)
+    print("Demo web interface started on http://0.0.0.0:5000")
     server.serve_forever()
 
 if __name__ == '__main__':

@@ -94,6 +94,8 @@ Changelog:
   * Comprehensive error handling and structured logging
   * CLI tools for testing and debugging
   * Server running on port 5000 with full functionality verified
+  * Fixed UTF-8 encoding issues in web interface (removed problematic Unicode symbols)
+  * Web demo interface running on port 8000 with clean ASCII display
 ```
 
 ## User Preferences

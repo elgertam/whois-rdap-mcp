@@ -33,16 +33,16 @@ def main():
     """Start both servers."""
     print("Starting MCP Whois/RDAP Server with Web Interface...")
     
-    # Start MCP server in background thread
+    # Start MCP server in background thread on port 5001
     mcp_thread = threading.Thread(target=run_mcp_server, daemon=True)
     mcp_thread.start()
     
     # Give MCP server time to start
     time.sleep(2)
     
-    # Start web server in main thread (so it can handle the HTTP requests)
-    print("MCP Server started on port 5000")
-    print("Web Interface starting on port 8000...")
+    # Start web server in main thread on port 5000 (for Replit preview)
+    print("MCP Server started on port 5001")
+    print("Web Interface starting on port 5000...")
     start_demo()
 
 if __name__ == "__main__":
