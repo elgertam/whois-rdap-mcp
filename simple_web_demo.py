@@ -14,6 +14,8 @@ class SimpleDemo(BaseHTTPRequestHandler):
         """Handle GET requests."""
         if self.path == '/':
             self._serve_demo_page()
+        elif self.path == '/health':
+            self._serve_health_check()
         elif self.path == '/test':
             self._test_mcp_connection()
         else:
@@ -25,6 +27,10 @@ class SimpleDemo(BaseHTTPRequestHandler):
             self.send_response(200)
             self.send_header('Content-type', 'text/html; charset=utf-8')
             self.send_header('Cache-Control', 'no-cache')
+            self.end_headers()
+        elif self.path == '/health':
+            self.send_response(200)
+            self.send_header('Content-type', 'application/json; charset=utf-8')
             self.end_headers()
         elif self.path == '/test':
             self.send_response(200)
@@ -87,6 +93,9 @@ class SimpleDemo(BaseHTTPRequestHandler):
         <div class="endpoint">resources/list - List available resources</div>
         <div class="endpoint">resources/read - Read whois:// or rdap:// resources</div>
         
+        <h2>Health Check</h2>
+        <div class="endpoint">GET /health - Server health status (for deployment monitoring)</div>
+        
         <h2>Verified Functionality</h2>
         <button onclick="testConnection()">Test MCP Connection</button>
         <div id="testResult"></div>
@@ -135,6 +144,22 @@ class SimpleDemo(BaseHTTPRequestHandler):
         self.send_header('Cache-Control', 'no-cache')
         self.end_headers()
         self.wfile.write(html.encode('utf-8'))
+    
+    def _serve_health_check(self):
+        """Serve health check endpoint for deployment."""
+        import datetime
+        health_data = {
+            "status": "healthy",
+            "service": "MCP Whois/RDAP Server",
+            "version": "1.0.0",
+            "timestamp": datetime.datetime.utcnow().isoformat() + "Z"
+        }
+        
+        self.send_response(200)
+        self.send_header('Content-type', 'application/json; charset=utf-8')
+        self.send_header('Cache-Control', 'no-cache')
+        self.end_headers()
+        self.wfile.write(json.dumps(health_data).encode('utf-8'))
     
     def _test_mcp_connection(self):
         """Test connection to MCP server."""
