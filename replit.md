@@ -116,6 +116,14 @@ Changelog:
   * Configured 'Deployment Server' workflow using the new deployment script
   * All deployment tests passing - application ready for production deployment
   * Port configuration: 5000 (web) → 80 (external), 5001 (MCP internal)
+
+- June 29, 2025. Fixed deployment entry point
+  * Updated main.py as the primary entry point for deployment
+  * Separated MCP server logic into mcp_main.py to avoid circular imports
+  * Run command now properly set to "python main.py" for Replit deployments
+  * Server successfully starting with both MCP (port 5001) and web interface (port 5000)
+  * Health endpoints responding correctly at /health with proper JSON status
+  * Deployment configuration ready - no build command needed for Python
 ```
 
 ## User Preferences

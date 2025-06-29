@@ -14,15 +14,15 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "Deployment Server"
+args = "Main Server"
 
 [[workflows.workflow]]
-name = "Deployment Server"
+name = "Main Server"
 author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "python replit_deploy.py"
+args = "python main.py"
 waitForPort = 5000
 
 [[ports]]

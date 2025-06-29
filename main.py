@@ -1,72 +1,65 @@
 #!/usr/bin/env python3
 """
-Model Context Protocol Server for Whois and RDAP lookups.
-Entry point for the MCP server application.
+Main entry point for MCP Whois/RDAP Server deployment.
+This file serves as the default entry point for Replit deployments.
 """
 
-import asyncio
-import sys
 import os
+import sys
+import asyncio
+import threading
+import time
+import signal
 from pathlib import Path
 
 # Add current directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent))
 
-from mcp_server import MCPServer
-from config import Config
-import structlog
-
-# Configure structured logging
-structlog.configure(
-    processors=[
-        structlog.stdlib.filter_by_level,
-        structlog.stdlib.add_logger_name,
-        structlog.stdlib.add_log_level,
-        structlog.stdlib.PositionalArgumentsFormatter(),
-        structlog.processors.TimeStamper(fmt="iso"),
-        structlog.processors.StackInfoRenderer(),
-        structlog.processors.format_exc_info,
-        structlog.processors.UnicodeDecoder(),
-        structlog.processors.JSONRenderer()
-    ],
-    context_class=dict,
-    logger_factory=structlog.stdlib.LoggerFactory(),
-    wrapper_class=structlog.stdlib.BoundLogger,
-    cache_logger_on_first_use=True,
-)
-
-logger = structlog.get_logger(__name__)
-
-
-async def main():
-    """Main entry point for the MCP server."""
+def run_mcp_server():
+    """Run the MCP server in background thread."""
     try:
-        # Initialize configuration
-        config = Config()
-        
-        # Create and start MCP server
-        server = MCPServer(config)
-        
-        logger.info("Starting MCP server for Whois/RDAP lookups", 
-                   version="1.0.0",
-                   bind_host=config.bind_host,
-                   bind_port=config.bind_port)
-        
-        await server.start()
-        
+        from mcp_main import main as mcp_main
+        asyncio.run(mcp_main())
     except KeyboardInterrupt:
-        logger.info("Received interrupt signal, shutting down gracefully")
+        pass
     except Exception as e:
-        logger.error("Fatal error in main", error=str(e), exc_info=True)
-        raise
-    finally:
-        logger.info("MCP server shutdown complete")
+        print(f"MCP Server error: {e}")
 
+def run_web_server():
+    """Run the web server in main thread."""
+    try:
+        from simple_web_demo import start_demo
+        start_demo()
+    except KeyboardInterrupt:
+        print("Web server shutting down...")
+    except Exception as e:
+        print(f"Web Server error: {e}")
+
+def signal_handler(signum, frame):
+    """Handle shutdown signals gracefully."""
+    print(f"Received signal {signum}, shutting down gracefully...")
+    sys.exit(0)
+
+def main():
+    """Main deployment entry point."""
+    # Set up signal handlers
+    signal.signal(signal.SIGINT, signal_handler)
+    signal.signal(signal.SIGTERM, signal_handler)
+    
+    print("Starting MCP Whois/RDAP Server...")
+    print(f"Environment: {os.getenv('REPLIT_ENVIRONMENT', 'production')}")
+    
+    # Start MCP server in background
+    mcp_thread = threading.Thread(target=run_mcp_server, daemon=True)
+    mcp_thread.start()
+    
+    # Give MCP server time to start
+    time.sleep(3)
+    print("MCP Server started on port 5001")
+    
+    # Start web server in main thread (blocking)
+    print("Web Interface starting on port 5000...")
+    run_web_server()
 
 if __name__ == "__main__":
-    try:
-        asyncio.run(main())
-    except KeyboardInterrupt:
-        sys.exit(0)
-    except Exception:
-        sys.exit(1)
+    main()
