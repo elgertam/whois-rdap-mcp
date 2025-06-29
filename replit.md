@@ -96,6 +96,14 @@ Changelog:
   * Server running on port 5000 with full functionality verified
   * Fixed UTF-8 encoding issues in web interface (removed problematic Unicode symbols)
   * Web demo interface running on port 8000 with clean ASCII display
+
+- June 29, 2025. Deployment fixes applied
+  * Added health check endpoint at /health for deployment monitoring
+  * Web server properly configured to bind to 0.0.0.0:5000
+  * Both root endpoint (/) and health endpoint return proper HTTP 200 responses
+  * MCP server runs on port 5001, web interface on port 5000
+  * Created deployment configuration guide
+  * Verified all endpoints respond correctly for deployment health checks
 ```
 
 ## User Preferences
