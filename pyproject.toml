@@ -28,7 +28,9 @@ dependencies = [
 
 [project.scripts]
 mcp-server = "main:main"
-mcp-deploy = "replit_deploy:main"
+
+[project.entry-points.console_scripts]
+start = "replit_deploy:main"
 
 [project.urls]
 Homepage = "https://github.com/example/mcp-whois-rdap-server"
