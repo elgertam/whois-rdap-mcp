@@ -19,6 +19,22 @@ class SimpleDemo(BaseHTTPRequestHandler):
         else:
             self._serve_404()
     
+    def do_HEAD(self):
+        """Handle HEAD requests."""
+        if self.path == '/':
+            self.send_response(200)
+            self.send_header('Content-type', 'text/html; charset=utf-8')
+            self.send_header('Cache-Control', 'no-cache')
+            self.end_headers()
+        elif self.path == '/test':
+            self.send_response(200)
+            self.send_header('Content-type', 'text/plain; charset=utf-8')
+            self.end_headers()
+        else:
+            self.send_response(404)
+            self.send_header('Content-type', 'text/html; charset=utf-8')
+            self.end_headers()
+    
     def _serve_demo_page(self):
         """Serve simple demo page."""
         html = """
