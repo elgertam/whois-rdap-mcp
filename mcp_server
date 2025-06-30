@@ -11,7 +11,7 @@ from pathlib import Path
 # Add current directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent))
 
-from mcp_stdio_server import main
+from mcp_stdio_server_fixed import main
 
 if __name__ == "__main__":
     asyncio.run(main())

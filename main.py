@@ -15,16 +15,6 @@ from pathlib import Path
 # Add current directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent))
 
-def run_mcp_server():
-    """Run the MCP server in background thread."""
-    try:
-        from mcp_main import main as mcp_main
-        asyncio.run(mcp_main())
-    except KeyboardInterrupt:
-        pass
-    except Exception as e:
-        print(f"MCP Server error: {e}")
-
 def run_web_server():
     """Run the web server in main thread."""
     try:
@@ -46,16 +36,13 @@ def main():
     signal.signal(signal.SIGINT, signal_handler)
     signal.signal(signal.SIGTERM, signal_handler)
     
-    print("Starting MCP Whois/RDAP Server...")
+    print("Starting MCP Whois/RDAP Server Web Interface...")
     print(f"Environment: {os.getenv('REPLIT_ENVIRONMENT', 'production')}")
-    
-    # Start MCP server in background
-    mcp_thread = threading.Thread(target=run_mcp_server, daemon=True)
-    mcp_thread.start()
-    
-    # Give MCP server time to start
-    time.sleep(3)
-    print("MCP Server started on port 5001")
+    print()
+    print("Note: This is a web interface for demonstration purposes.")
+    print("To use the actual MCP server, run: ./mcp_server")
+    print("The MCP server communicates via stdin/stdout as per MCP specification.")
+    print()
     
     # Start web server in main thread (blocking)
     print("Web Interface starting on port 5000...")

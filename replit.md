@@ -124,6 +124,16 @@ Changelog:
   * Server successfully starting with both MCP (port 5001) and web interface (port 5000)
   * Health endpoints responding correctly at /health with proper JSON status
   * Deployment configuration ready - no build command needed for Python
+
+- June 29, 2025. Fixed MCP architecture to follow specification
+  * Removed network-based MCP server (incorrect implementation)
+  * Created proper stdio-based MCP server (mcp_stdio_server_fixed.py)
+  * Added executable mcp_server script for MCP clients to invoke
+  * Updated main.py to run only web demo interface on port 5000
+  * Created comprehensive README explaining MCP usage
+  * MCP server now communicates via stdin/stdout as per MCP specification
+  * Web interface clearly explains it's demo-only, real MCP server is ./mcp_server
+  * Fixed deployment issues - .replit file needs "python3" instead of "Python"
 ```
 
 ## User Preferences

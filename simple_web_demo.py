@@ -69,10 +69,11 @@ class SimpleDemo(BaseHTTPRequestHandler):
         <h1>MCP Whois/RDAP Server</h1>
         <p><strong>Model Context Protocol Server for Domain and IP Address Lookups</strong></p>
         
-        <div class="status success">
-            <strong>Server Status:</strong> MCP server is running on port 5001<br>
-            <strong>Protocol:</strong> JSON-RPC 2.0 over TCP<br>
-            <strong>Data Sources:</strong> Real Whois registries and RDAP endpoints
+        <div class="status info">
+            <strong>Important:</strong> This is a web demo interface only!<br>
+            <strong>Actual MCP Server:</strong> Runs via stdio (standard input/output)<br>
+            <strong>Usage:</strong> Execute ./mcp_server to start the real MCP server<br>
+            <strong>Protocol:</strong> JSON-RPC 2.0 over stdin/stdout (MCP specification)
         </div>
         
         <h2>Server Features</h2>
