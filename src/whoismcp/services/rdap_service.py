@@ -9,9 +9,9 @@ import anyio
 import httpx
 import structlog
 
-from models.domain_models import RDAPResult
-from utils.validators import is_valid_domain, is_valid_ip
-from config import Config
+from ..models.domain_models import RDAPResult
+from ..utils.validators import is_valid_domain, is_valid_ip
+from ..config import Config
 
 logger = structlog.get_logger(__name__)
 

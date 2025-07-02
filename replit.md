@@ -134,6 +134,32 @@ Changelog:
   * MCP server now communicates via stdin/stdout as per MCP specification
   * Web interface clearly explains it's demo-only, real MCP server is ./mcp_server
   * Fixed deployment issues - .replit file needs "python3" instead of "Python"
+
+- June 29, 2025. Major package restructuring with uv
+  * Completely restructured codebase using modern Python packaging with uv
+  * Moved all code to src/whoismcp/ package structure for better organization
+  * Created proper package hierarchy: models/, services/, utils/ with __init__.py files
+  * Fixed all import statements to use relative imports within package
+  * Added comprehensive pyproject.toml with modern build system (hatchling)
+  * Set up development dependencies: pytest, black, ruff, mypy for code quality
+  * Created test structure in tests/ directory with proper fixtures
+  * Added CLI interface with click for easy command-line usage
+  * Updated all entry points to use new package structure
+  * MCP server now available via: uv run whoismcp-server
+  * CLI tools available via: uv run whoismcp whois/rdap commands
+  * Maintained backward compatibility with ./mcp_server_new executable
+  * Updated README with comprehensive documentation and modern usage examples
+
+- July 2, 2025. Final cleanup and test fixes completed
+  * Removed all duplicate and obsolete files from previous iterations
+  * Fixed async initialization issues in CacheService and test fixtures
+  * Updated Pydantic models to use modern ConfigDict instead of deprecated Config class
+  * Fixed CLI logging configuration to properly handle structured logging
+  * All 23 tests now pass successfully with comprehensive coverage
+  * Project structure is clean and follows Python packaging best practices
+  * MCP server working correctly via stdin/stdout communication
+  * CLI tools functional with proper configuration management
+  * Ready for production use and deployment
 ```
 
 ## User Preferences

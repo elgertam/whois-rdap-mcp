@@ -9,10 +9,10 @@ from typing import Dict, Any, Optional
 import anyio
 import structlog
 
-from models.domain_models import WhoisResult
-from utils.validators import is_valid_domain, is_valid_ip
-from utils.parsers import WhoisParser
-from config import Config
+from ..models.domain_models import WhoisResult
+from ..utils.validators import is_valid_domain, is_valid_ip
+from ..utils.parsers import WhoisParser
+from ..config import Config
 
 logger = structlog.get_logger(__name__)
 

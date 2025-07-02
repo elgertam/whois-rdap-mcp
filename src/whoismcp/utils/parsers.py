@@ -7,7 +7,7 @@ from datetime import datetime
 from typing import Dict, Any, List, Optional
 import structlog
 
-from models.domain_models import DomainInfo, IPInfo
+from ..models.domain_models import DomainInfo, IPInfo
 
 logger = structlog.get_logger(__name__)
 

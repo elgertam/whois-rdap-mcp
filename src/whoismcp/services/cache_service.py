@@ -8,7 +8,7 @@ import time
 from typing import Dict, Any, Optional, Tuple, List
 import structlog
 
-from config import Config
+from ..config import Config
 
 logger = structlog.get_logger(__name__)
 
@@ -42,10 +42,14 @@ class CacheService:
         self._access_order: List[str] = []
         self._lock = asyncio.Lock()
         self._cleanup_task = None
-        
-        # Start background cleanup task
-        if config.cache_cleanup_interval > 0:
+        self._started = False
+    
+    async def start(self) -> None:
+        """Start the cache service and background cleanup task."""
+        if not self._started and self.config.cache_cleanup_interval > 0:
             self._cleanup_task = asyncio.create_task(self._cleanup_loop())
+            self._started = True
+            logger.info("Cache service started", cleanup_interval=self.config.cache_cleanup_interval)
     
     async def get(self, key: str) -> Optional[Any]:
         """Get value from cache."""

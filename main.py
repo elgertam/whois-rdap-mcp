@@ -1,19 +1,16 @@
 #!/usr/bin/env python3
 """
-Main entry point for MCP Whois/RDAP Server deployment.
-This file serves as the default entry point for Replit deployments.
+Main entry point for deployment.
+This provides a web interface demonstrating the WhoisMCP functionality.
 """
 
 import os
 import sys
-import asyncio
-import threading
-import time
 import signal
 from pathlib import Path
 
-# Add current directory to path for imports
-sys.path.insert(0, str(Path(__file__).parent))
+# Add the src directory to Python path for the whoismcp package
+sys.path.insert(0, str(Path(__file__).parent / "src"))
 
 def run_web_server():
     """Run the web server in main thread."""
@@ -36,11 +33,12 @@ def main():
     signal.signal(signal.SIGINT, signal_handler)
     signal.signal(signal.SIGTERM, signal_handler)
     
-    print("Starting MCP Whois/RDAP Server Web Interface...")
+    print("Starting WhoisMCP Web Interface...")
     print(f"Environment: {os.getenv('REPLIT_ENVIRONMENT', 'production')}")
     print()
     print("Note: This is a web interface for demonstration purposes.")
-    print("To use the actual MCP server, run: ./mcp_server")
+    print("To use the actual MCP server, run: ./mcp_server_new")
+    print("Or use the uv command: uv run whoismcp-server")
     print("The MCP server communicates via stdin/stdout as per MCP specification.")
     print()
     

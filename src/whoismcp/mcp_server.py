@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 MCP Server for Whois/RDAP lookups using stdio communication.
-This is the correct way to implement an MCP server - via stdin/stdout.
+This implements the Model Context Protocol specification for AI integration.
 """
 
 import asyncio
@@ -9,22 +9,21 @@ import json
 import sys
 from typing import Dict, Any, Optional
 import structlog
-from datetime import datetime
 
-from services.whois_service import WhoisService
-from services.rdap_service import RDAPService
-from services.cache_service import CacheService
-from utils.rate_limiter import RateLimiter
-from utils.validators import is_valid_domain, is_valid_ip
-from config import Config
+from whoismcp.config import Config
+from whoismcp.services.whois_service import WhoisService
+from whoismcp.services.rdap_service import RDAPService
+from whoismcp.services.cache_service import CacheService
+from whoismcp.utils.rate_limiter import RateLimiter
+from whoismcp.utils.validators import is_valid_domain, is_valid_ip
 
 logger = structlog.get_logger(__name__)
 
 
-class MCPStdioServer:
+class MCPServer:
     """MCP Server that communicates via stdin/stdout."""
     
-    def __init__(self):
+    def __init__(self) -> None:
         self.config = Config.from_env()
         self.whois_service = WhoisService(self.config)
         self.rdap_service = RDAPService(self.config)
@@ -33,7 +32,7 @@ class MCPStdioServer:
         
         # Server info
         self.server_info = {
-            "name": "whois-rdap-server",
+            "name": "whoismcp",
             "version": "1.0.0"
         }
         
@@ -107,7 +106,7 @@ class MCPStdioServer:
             }
         ]
 
-    def write_message(self, message: Dict[str, Any]):
+    def write_message(self, message: Dict[str, Any]) -> None:
         """Write a message to stdout."""
         json_str = json.dumps(message)
         print(json_str, flush=True)
@@ -424,9 +423,12 @@ class MCPStdioServer:
                 }
             }
 
-    async def run(self):
+    async def run(self) -> None:
         """Main server loop."""
         logger.info("MCP stdio server starting")
+        
+        # Start cache service
+        await self.cache_service.start()
         
         try:
             while True:
@@ -447,11 +449,14 @@ class MCPStdioServer:
             raise
 
 
-async def main():
+def main() -> None:
     """Main entry point."""
-    server = MCPStdioServer()
-    await server.run()
+    async def run_server():
+        server = MCPServer()
+        await server.run()
+    
+    asyncio.run(run_server())
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    main()

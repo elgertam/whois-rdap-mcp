@@ -3,7 +3,7 @@ Data models for domain and IP lookup results.
 """
 
 from typing import Dict, Any, Optional, List
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 from datetime import datetime
 
 
@@ -21,10 +21,11 @@ class WhoisResult(BaseModel):
     timestamp: datetime = Field(default_factory=datetime.utcnow,
                                description="Timestamp of the lookup")
     
-    class Config:
-        json_encoders = {
+    model_config = ConfigDict(
+        json_encoders={
             datetime: lambda v: v.isoformat()
         }
+    )
 
 
 class RDAPResult(BaseModel):
@@ -40,10 +41,11 @@ class RDAPResult(BaseModel):
     timestamp: datetime = Field(default_factory=datetime.utcnow,
                                description="Timestamp of the lookup")
     
-    class Config:
-        json_encoders = {
+    model_config = ConfigDict(
+        json_encoders={
             datetime: lambda v: v.isoformat()
         }
+    )
 
 
 class DomainInfo(BaseModel):
@@ -63,10 +65,11 @@ class DomainInfo(BaseModel):
     status: List[str] = Field(default_factory=list)
     dnssec: Optional[str] = None
     
-    class Config:
-        json_encoders = {
+    model_config = ConfigDict(
+        json_encoders={
             datetime: lambda v: v.isoformat() if v else None
         }
+    )
 
 
 class IPInfo(BaseModel):
@@ -83,7 +86,8 @@ class IPInfo(BaseModel):
     registration_date: Optional[datetime] = None
     updated_date: Optional[datetime] = None
     
-    class Config:
-        json_encoders = {
+    model_config = ConfigDict(
+        json_encoders={
             datetime: lambda v: v.isoformat() if v else None
         }
+    )

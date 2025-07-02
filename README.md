@@ -1,30 +1,93 @@
-# MCP Whois/RDAP Server
+# WhoisMCP
 
-A Model Context Protocol (MCP) server that provides domain and IP address lookup services using Whois and RDAP protocols.
+A modern, high-performance Model Context Protocol (MCP) server providing domain and IP address lookup services using both traditional Whois and modern RDAP protocols.
 
-## What is MCP?
+## Features
 
-The Model Context Protocol (MCP) is a specification for connecting AI models with external data sources and tools. MCP servers run locally and communicate with AI clients via stdin/stdout.
+✨ **Modern Architecture**: Clean package structure with `uv` for dependency management  
+🚀 **High Performance**: Asynchronous operations with connection pooling  
+🛡️ **Rate Limiting**: Built-in protection for external registry servers  
+💾 **Smart Caching**: In-memory LRU cache with TTL for optimal performance  
+🔍 **Dual Protocols**: Support for both Whois (TCP) and RDAP (HTTPS) lookups  
+🌍 **Global Coverage**: Comprehensive support for major TLDs and Regional Internet Registries  
+📊 **Structured Logging**: Detailed logging with structured output  
+🧪 **Comprehensive Testing**: Full test suite with pytest and asyncio support  
 
-## Usage
+## Quick Start
+
+### Development Setup
+
+```bash
+# Clone the repository
+git clone <repository-url>
+cd whoismcp
+
+# Install with uv (recommended)
+uv sync --extra dev
+
+# Or install with pip
+pip install -e ".[dev]"
+```
 
 ### Running the MCP Server
 
-The MCP server is designed to be used by MCP-compatible AI clients. To start the server:
+The MCP server communicates via stdin/stdout as per the MCP specification:
 
 ```bash
-./mcp_server
+# Using uv (recommended)
+uv run whoismcp-server
+
+# Or directly
+./mcp_server_new
+
+# For development
+python -m whoismcp.mcp_server
 ```
 
-The server will:
-- Read JSON-RPC requests from stdin
-- Process whois/RDAP lookups
-- Write JSON-RPC responses to stdout
+### Using the CLI
+
+```bash
+# Interactive whois lookup
+uv run whoismcp whois example.com
+
+# RDAP lookup with JSON output
+uv run whoismcp rdap example.com --output json
+
+# Test server connectivity
+uv run whoismcp test-server --host localhost --port 5001
+```
+
+### Web Demo
+
+A web interface demonstrates the functionality:
+
+```bash
+python main.py
+# Visit http://localhost:5000
+```
+
+## MCP Integration
+
+### Client Configuration
+
+Add to your MCP client configuration:
+
+```json
+{
+  "mcpServers": {
+    "whoismcp": {
+      "command": "uv",
+      "args": ["run", "whoismcp-server"],
+      "cwd": "/path/to/whoismcp"
+    }
+  }
+}
+```
 
 ### Available Tools
 
-- **whois_lookup**: Perform Whois lookup for domain or IP address
-- **rdap_lookup**: Perform RDAP lookup for domain or IP address
+- **`whois_lookup`**: Perform Whois lookup for domain or IP address
+- **`rdap_lookup`**: Perform RDAP lookup for domain or IP address
 
 ### Available Resources
 
@@ -33,72 +96,159 @@ The server will:
 - `rdap://domain/{domain}` - Domain RDAP information
 - `rdap://ip/{ip}` - IP RDAP information
 
-### Example MCP Client Configuration
+## Package Structure
 
-```json
-{
-  "mcpServers": {
-    "whois-rdap": {
-      "command": "./mcp_server",
-      "cwd": "/path/to/whois-rdap-server"
-    }
-  }
-}
 ```
-
-## Web Interface (Demo)
-
-A web interface is available for demonstration purposes at port 5000. This is NOT the MCP server - it's just a demo showing the functionality.
-
-To start the web interface:
-
-```bash
-python main.py
+whoismcp/
+├── src/whoismcp/           # Main package
+│   ├── __init__.py         # Package exports
+│   ├── config.py           # Configuration management
+│   ├── mcp_server.py       # MCP server implementation
+│   ├── cli.py              # Command-line interface
+│   ├── models/             # Data models
+│   │   ├── __init__.py
+│   │   └── domain_models.py
+│   ├── services/           # Core services
+│   │   ├── __init__.py
+│   │   ├── whois_service.py
+│   │   ├── rdap_service.py
+│   │   └── cache_service.py
+│   └── utils/              # Utilities
+│       ├── __init__.py
+│       ├── validators.py
+│       ├── parsers.py
+│       └── rate_limiter.py
+├── tests/                  # Test suite
+├── pyproject.toml          # Package configuration
+└── README.md               # This file
 ```
-
-## Features
-
-- **Asynchronous Operations**: High-performance async processing
-- **Rate Limiting**: Protects external registry servers
-- **Caching**: In-memory cache with TTL for performance
-- **Multiple Protocols**: Both Whois (TCP) and RDAP (HTTPS)
-- **Comprehensive Coverage**: Supports major TLDs and RIRs
-- **Error Handling**: Robust error handling and structured logging
-
-## Services
-
-- **WhoisService**: TCP-based lookups to traditional Whois servers
-- **RDAPService**: HTTPS-based lookups to modern RDAP endpoints
-- **CacheService**: In-memory LRU cache with TTL
-- **RateLimiter**: Token bucket rate limiting per client and globally
 
 ## Configuration
 
-Configure via environment variables:
+Environment variables for customization:
 
-- `BIND_HOST`: Host for internal services (default: 0.0.0.0)
-- `BIND_PORT`: Port for internal services (default: 5001)
-- `WHOIS_TIMEOUT`: Whois query timeout in seconds (default: 30)
-- `RDAP_TIMEOUT`: RDAP query timeout in seconds (default: 30)
-- `CACHE_TTL`: Cache TTL in seconds (default: 3600)
-- `CACHE_MAX_SIZE`: Maximum cache entries (default: 1000)
-- `GLOBAL_RATE_LIMIT_PER_SECOND`: Global rate limit (default: 10.0)
-- `CLIENT_RATE_LIMIT_PER_SECOND`: Per-client rate limit (default: 2.0)
-- `LOG_LEVEL`: Logging level (default: INFO)
+```bash
+# Server settings
+BIND_HOST=0.0.0.0           # Bind host (default: 0.0.0.0)
+BIND_PORT=5001              # Bind port (default: 5001)
 
-## Dependencies
+# Timeouts
+WHOIS_TIMEOUT=30            # Whois timeout in seconds
+RDAP_TIMEOUT=30             # RDAP timeout in seconds
 
-- Python 3.11+
-- anyio (async I/O)
-- httpx (HTTP client)
-- pydantic (data validation)
-- structlog (structured logging)
-- click (CLI)
+# Caching
+CACHE_TTL=3600              # Cache TTL in seconds
+CACHE_MAX_SIZE=1000         # Maximum cache entries
+CACHE_CLEANUP_INTERVAL=300  # Cleanup interval in seconds
+
+# Rate limiting
+GLOBAL_RATE_LIMIT_PER_SECOND=10.0    # Global rate limit
+GLOBAL_RATE_LIMIT_BURST=50           # Global burst limit
+CLIENT_RATE_LIMIT_PER_SECOND=2.0     # Per-client rate limit
+CLIENT_RATE_LIMIT_BURST=10           # Per-client burst limit
+
+# Logging
+LOG_LEVEL=INFO              # Logging level (DEBUG, INFO, WARNING, ERROR)
+```
+
+## Development
+
+### Running Tests
+
+```bash
+# Run all tests
+uv run pytest
+
+# Run with coverage
+uv run pytest --cov=src/whoismcp --cov-report=html
+
+# Run specific test file
+uv run pytest tests/test_mcp_server.py -v
+```
+
+### Code Quality
+
+```bash
+# Format code
+uv run black src/ tests/
+
+# Lint code
+uv run ruff check src/ tests/
+
+# Type checking
+uv run mypy src/whoismcp/
+```
+
+### Project Management
+
+This project uses `uv` for modern Python package management:
+
+```bash
+# Add dependency
+uv add httpx
+
+# Add development dependency
+uv add --dev pytest
+
+# Update dependencies
+uv sync
+
+# Build package
+uv build
+```
 
 ## Architecture
 
-The server follows MCP specification:
-- JSON-RPC 2.0 protocol over stdio
-- Standard MCP methods (initialize, tools/list, tools/call, etc.)
-- Proper error handling and response formatting
-- Resource-based access patterns
+### MCP Protocol
+
+- **JSON-RPC 2.0**: Standard protocol over stdin/stdout
+- **Initialize**: Handshake and capability negotiation
+- **Tools**: Available lookup functions
+- **Resources**: URI-based data access
+- **Streaming**: Real-time request/response handling
+
+### Services Architecture
+
+- **WhoisService**: Asynchronous TCP connections to global Whois servers
+- **RDAPService**: HTTPS requests to structured RDAP endpoints with bootstrap discovery
+- **CacheService**: In-memory LRU cache with TTL for performance optimization
+- **RateLimiter**: Token bucket implementation with per-client and global limits
+
+### Data Flow
+
+1. **Request Processing**: MCP client sends JSON-RPC request via stdin
+2. **Validation**: Input validation for domain/IP format
+3. **Rate Limiting**: Enforce per-client and global rate limits
+4. **Cache Check**: Attempt to serve from cache if available
+5. **Service Dispatch**: Route to appropriate service (Whois/RDAP)
+6. **Data Retrieval**: Query external servers with connection pooling
+7. **Response Parsing**: Parse and structure response data
+8. **Caching**: Store successful results for future requests
+9. **Response**: Return structured JSON-RPC response via stdout
+
+## Registry Support
+
+### Whois Servers
+
+- **Generic TLDs**: .com, .net, .org, .info, .biz, and more
+- **Country TLDs**: .uk, .de, .fr, .nl, .au, .ca, .jp, and more
+- **Regional Internet Registries**: ARIN, RIPE, APNIC, LACNIC, AFRINIC
+
+### RDAP Servers
+
+- **Bootstrap Discovery**: Automatic server discovery via IANA bootstrap
+- **Structured Data**: Modern JSON-based responses
+- **Standardized Format**: Consistent data structure across registries
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch: `git checkout -b feature-name`
+3. Make your changes with tests
+4. Run the test suite: `uv run pytest`
+5. Check code quality: `uv run black . && uv run ruff check .`
+6. Submit a pull request
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.

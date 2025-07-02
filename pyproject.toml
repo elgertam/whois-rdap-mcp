@@ -1,14 +1,16 @@
 [build-system]
-requires = ["setuptools>=45", "wheel"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 [project]
-name = "mcp-whois-rdap-server"
+name = "whoismcp"
 version = "1.0.0"
 description = "Model Context Protocol Server for Whois and RDAP lookups"
-authors = [{name = "MCP Server", email = "server@example.com"}]
-license = {text = "MIT"}
+authors = [
+    {name = "Whois MCP Server", email = "server@example.com"}
+]
 readme = "README.md"
+license = {text = "MIT"}
 requires-python = ">=3.11"
 classifiers = [
     "Development Status :: 5 - Production/Stable",
@@ -17,7 +19,10 @@ classifiers = [
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Topic :: Internet :: Name Service (DNS)",
+    "Topic :: System :: Networking",
 ]
+
 dependencies = [
     "anyio>=4.0.0",
     "click>=8.1.0", 
@@ -26,18 +31,106 @@ dependencies = [
     "structlog>=23.0.0",
 ]
 
-[project.scripts]
-mcp-server = "main:main"
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-asyncio>=0.21.0",
+    "pytest-cov>=4.0.0",
+    "black>=23.0.0",
+    "ruff>=0.1.0",
+    "mypy>=1.0.0",
+]
 
-[project.entry-points.console_scripts]
-start = "replit_deploy:main"
+[project.scripts]
+whoismcp = "whoismcp.cli:main"
+whoismcp-server = "whoismcp.mcp_server:main"
 
 [project.urls]
-Homepage = "https://github.com/example/mcp-whois-rdap-server"
-Repository = "https://github.com/example/mcp-whois-rdap-server"
+Homepage = "https://github.com/example/whoismcp"
+Repository = "https://github.com/example/whoismcp"
+"Bug Tracker" = "https://github.com/example/whoismcp/issues"
 
-[tool.setuptools]
-packages = ["models", "services", "utils"]
+[tool.hatch.build.targets.wheel]
+packages = ["src/whoismcp"]
 
-[tool.setuptools.package-data]
-"*" = ["*.py"]
+[tool.black]
+line-length = 88
+target-version = ['py311']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  # directories
+  \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | build
+  | dist
+)/
+'''
+
+[tool.ruff]
+target-version = "py311"
+line-length = 88
+select = [
+    "E",  # pycodestyle errors
+    "W",  # pycodestyle warnings
+    "F",  # pyflakes
+    "I",  # isort
+    "B",  # flake8-bugbear
+    "C4", # flake8-comprehensions
+    "UP", # pyupgrade
+]
+ignore = [
+    "E501",  # line too long, handled by black
+]
+
+[tool.ruff.per-file-ignores]
+"__init__.py" = ["F401"]
+
+[tool.mypy]
+python_version = "3.11"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+warn_unreachable = true
+strict_equality = true
+
+[tool.pytest.ini_options]
+minversion = "7.0"
+addopts = "-ra -q --strict-markers --strict-config"
+testpaths = ["tests"]
+asyncio_mode = "auto"
+python_files = ["test_*.py", "*_test.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+
+[tool.coverage.run]
+source = ["src"]
+omit = [
+    "*/tests/*",
+    "*/test_*",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if self.debug:",
+    "if settings.DEBUG",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if 0:",
+    "if __name__ == .__main__.:",
+    "class .*\\bProtocol\\):",
+    "@(abc\\.)?abstractmethod",
+]

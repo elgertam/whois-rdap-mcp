@@ -8,7 +8,7 @@ from typing import Dict, DefaultDict, Any, Optional
 from collections import defaultdict
 import structlog
 
-from config import Config
+from ..config import Config
 
 logger = structlog.get_logger(__name__)
 
