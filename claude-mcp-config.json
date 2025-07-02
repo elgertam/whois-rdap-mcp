@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "whoismcp": {
+      "command": "uv",
+      "args": ["run", "whoismcp-server"],
+      "cwd": "/path/to/your/project"
+    }
+  }
+}
