@@ -17,6 +17,26 @@ from whoismcp.services.cache_service import CacheService
 from whoismcp.utils.rate_limiter import RateLimiter
 from whoismcp.utils.validators import is_valid_domain, is_valid_ip
 
+# Configure structlog to output to stderr for MCP compatibility
+structlog.configure(
+    processors=[
+        structlog.stdlib.filter_by_level,
+        structlog.stdlib.add_logger_name,
+        structlog.stdlib.add_log_level,
+        structlog.stdlib.PositionalArgumentsFormatter(),
+        structlog.processors.TimeStamper(fmt="iso"),
+        structlog.processors.StackInfoRenderer(),
+        structlog.processors.format_exc_info,
+        structlog.dev.ConsoleRenderer()
+    ],
+    wrapper_class=structlog.stdlib.BoundLogger,
+    logger_factory=structlog.stdlib.LoggerFactory(),
+    cache_logger_on_first_use=True,
+)
+
+# Get logger and ensure it uses stderr
+import logging
+logging.basicConfig(stream=sys.stderr, level=logging.INFO, force=True)
 logger = structlog.get_logger(__name__)
 
 
