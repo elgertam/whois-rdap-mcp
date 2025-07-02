@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "whoismcp"
-version = "0.1.0"
+version = "0.1.1"
 description = "Model Context Protocol Server for Whois and RDAP lookups"
 authors = [
     {name = "Whois MCP Server", email = "server@example.com"}
