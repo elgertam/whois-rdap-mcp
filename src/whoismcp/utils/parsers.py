@@ -175,6 +175,15 @@ class WhoisParser:
                     date_str = line.split(':', 1)[1].strip()
                     parsed_data['creation_date'] = self._parse_date(date_str)
 
+                elif 'status:' in line_lower:
+                    if 'status' not in parsed_data:
+                        parsed_data['status'] = []
+                    status_full = line.split(':', 1)[1].strip()
+                    # Extract just the status code before the URL
+                    status = status_full.split(' ')[0]
+                    if status not in parsed_data['status']:
+                        parsed_data['status'].append(status)
+
                 elif 'expir' in line_lower and 'date:' in line_lower and 'expiration_date' not in parsed_data:
                     date_str = line.split(':', 1)[1].strip()
                     parsed_data['expiration_date'] = self._parse_date(date_str)
