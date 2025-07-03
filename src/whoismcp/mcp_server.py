@@ -99,32 +99,7 @@ class MCPServer:
         ]
 
         # Define available resources
-        self.resources = [
-            {
-                "uri": "whois://domain/{domain}",
-                "name": "Domain Whois Information",
-                "description": "Retrieve Whois information for a domain name",
-                "mimeType": "application/json"
-            },
-            {
-                "uri": "whois://ip/{ip}",
-                "name": "IP Whois Information",
-                "description": "Retrieve Whois information for an IP address",
-                "mimeType": "application/json"
-            },
-            {
-                "uri": "rdap://domain/{domain}",
-                "name": "Domain RDAP Information",
-                "description": "Retrieve RDAP information for a domain name",
-                "mimeType": "application/json"
-            },
-            {
-                "uri": "rdap://ip/{ip}",
-                "name": "IP RDAP Information",
-                "description": "Retrieve RDAP information for an IP address",
-                "mimeType": "application/json"
-            }
-        ]
+        self.resources = []
 
     def write_message(self, message: Dict[str, Any]) -> None:
         """Write a message to stdout."""
