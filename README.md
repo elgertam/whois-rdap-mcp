@@ -4,14 +4,14 @@ A modern, high-performance Model Context Protocol (MCP) server providing domain 
 
 ## Features
 
-✨ **Modern Architecture**: Clean package structure with `uv` for dependency management  
-🚀 **High Performance**: Asynchronous operations with connection pooling  
-🛡️ **Rate Limiting**: Built-in protection for external registry servers  
-💾 **Smart Caching**: In-memory LRU cache with TTL for optimal performance  
-🔍 **Dual Protocols**: Support for both Whois (TCP) and RDAP (HTTPS) lookups  
-🌍 **Global Coverage**: Comprehensive support for major TLDs and Regional Internet Registries  
-📊 **Structured Logging**: Detailed logging with structured output  
-🧪 **Comprehensive Testing**: Full test suite with pytest and asyncio support  
+✨ **Modern Architecture**: Clean package structure with `uv` for dependency management
+🚀 **High Performance**: Asynchronous operations with connection pooling
+🛡️ **Rate Limiting**: Built-in protection for external registry servers
+💾 **Smart Caching**: In-memory LRU cache with TTL for optimal performance
+🔍 **Dual Protocols**: Support for both Whois (TCP) and RDAP (HTTPS) lookups
+🌍 **Global Coverage**: Comprehensive support for major TLDs and Regional Internet Registries
+📊 **Structured Logging**: Detailed logging with structured output
+🧪 **Comprehensive Testing**: Full test suite with pytest and asyncio support
 
 ## Quick Start
 
@@ -76,8 +76,8 @@ Add to your MCP client configuration:
 {
   "mcpServers": {
     "whoismcp": {
-      "command": "uv",
-      "args": ["run", "whoismcp-server"],
+      "command": "/path/to/whoismcp/.venv/bin/python",
+      "args": ["run", "-m", "whoismcp.mcp_server"],
       "cwd": "/path/to/whoismcp"
     }
   }
@@ -92,7 +92,7 @@ Add to your MCP client configuration:
 ### Available Resources
 
 - `whois://domain/{domain}` - Domain Whois information
-- `whois://ip/{ip}` - IP Whois information  
+- `whois://ip/{ip}` - IP Whois information
 - `rdap://domain/{domain}` - Domain RDAP information
 - `rdap://ip/{ip}` - IP RDAP information
 
