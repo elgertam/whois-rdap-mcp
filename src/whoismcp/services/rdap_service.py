@@ -68,7 +68,8 @@ class RDAPService:
                 headers={
                     'User-Agent': 'MCP-Whois-RDAP-Server/1.0.0',
                     'Accept': 'application/rdap+json, application/json'
-                }
+                },
+                follow_redirects=True
             )
         return self._http_client
     
@@ -297,6 +298,15 @@ class RDAPService:
             # Make HTTP request
             client = await self._get_http_client()
             response = await client.get(url)
+            
+            # Log redirect information if any
+            if response.history:
+                logger.debug("RDAP request redirected", 
+                           original_url=url,
+                           final_url=str(response.url),
+                           redirect_count=len(response.history),
+                           redirect_codes=[r.status_code for r in response.history])
+            
             response.raise_for_status()
             
             # Parse JSON response
@@ -305,6 +315,9 @@ class RDAPService:
             # Validate RDAP response structure
             if not isinstance(data, dict):
                 raise ValueError("Invalid RDAP response format")
+            
+            logger.debug("RDAP query successful", server=server, path=path, 
+                        response_size=len(str(data)))
             
             return data
             

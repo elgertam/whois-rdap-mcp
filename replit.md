@@ -160,6 +160,14 @@ Changelog:
   * MCP server working correctly via stdin/stdout communication
   * CLI tools functional with proper configuration management
   * Ready for production use and deployment
+
+- July 3, 2025. Critical MCP protocol and RDAP service fixes
+  * Fixed logging configuration to properly send logs to stderr instead of stdout
+  * MCP protocol now compliant - stdout contains only JSON-RPC messages, stderr for logs
+  * Added follow_redirects=True to RDAP service HTTP client for proper 303 redirect handling
+  * Enhanced RDAP logging to track redirects and debug connection issues
+  * ARIN and other registry redirects now properly followed automatically
+  * Server ready for production deployment with Claude Desktop and other MCP clients
 ```
 
 ## User Preferences
