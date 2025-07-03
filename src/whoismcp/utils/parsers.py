@@ -149,47 +149,59 @@ class WhoisParser:
     def parse_domain_whois(self, whois_text: str) -> dict[str, Any]:
         """Parse domain Whois response."""
         try:
-            # Normalize text
-            normalized_text = self._normalize_whois_text(whois_text)
-
-            # Extract basic fields
             parsed_data = {}
 
-            for field, patterns in self.DOMAIN_PATTERNS.items():
-                value = self._extract_field(normalized_text, patterns)
-                if value:
-                    if field in ["creation_date", "expiration_date", "updated_date"]:
-                        parsed_data[field] = self._parse_date(value)
-                    elif field == "name_servers":
-                        # Handle multiple name servers
-                        if field not in parsed_data:
-                            parsed_data[field] = []
-                        parsed_data[field].append(value.strip())
-                    elif field == "status":
-                        # Handle multiple status values
-                        if field not in parsed_data:
-                            parsed_data[field] = []
-                        parsed_data[field].append(value.strip())
-                    else:
-                        parsed_data[field] = value.strip()
+            # Don't normalize to lowercase - we lose important info
+            lines = whois_text.split('\n')
 
-            # Extract all name servers
-            ns_list = self._extract_all_matches(
-                normalized_text, self.DOMAIN_PATTERNS["name_servers"]
-            )
-            if ns_list:
-                parsed_data["name_servers"] = [ns.strip() for ns in ns_list]
+            for line in lines:
+                line = line.strip()
+                if not line or line.startswith('%') or line.startswith('#'):
+                    continue
 
-            # Extract all status values
-            status_list = self._extract_all_matches(
-                normalized_text, self.DOMAIN_PATTERNS["status"]
-            )
-            if status_list:
-                parsed_data["status"] = [status.strip() for status in status_list]
+                # Check each pattern against the current line
+                line_lower = line.lower()
 
-            logger.debug(
-                "Domain whois parsing completed", fields_extracted=len(parsed_data)
-            )
+                # Domain name
+                if 'domain name:' in line_lower and 'domain_name' not in parsed_data:
+                    parsed_data['domain_name'] = line.split(':', 1)[1].strip()
+
+                # Registrar
+                elif 'registrar:' in line_lower and 'registrar' not in parsed_data:
+                    parsed_data['registrar'] = line.split(':', 1)[1].strip()
+
+                # Dates
+                elif 'creation date:' in line_lower and 'creation_date' not in parsed_data:
+                    date_str = line.split(':', 1)[1].strip()
+                    parsed_data['creation_date'] = self._parse_date(date_str)
+
+                elif 'expir' in line_lower and 'date:' in line_lower and 'expiration_date' not in parsed_data:
+                    date_str = line.split(':', 1)[1].strip()
+                    parsed_data['expiration_date'] = self._parse_date(date_str)
+
+                elif 'updated date:' in line_lower and 'updated_date' not in parsed_data:
+                    date_str = line.split(':', 1)[1].strip()
+                    parsed_data['updated_date'] = self._parse_date(date_str)
+
+                # Name servers
+                elif ('name server:' in line_lower or 'nserver:' in line_lower):
+                    if 'name_servers' not in parsed_data:
+                        parsed_data['name_servers'] = []
+                    ns = line.split(':', 1)[1].strip()
+                    if ns not in parsed_data['name_servers']:
+                        parsed_data['name_servers'].append(ns)
+
+                # Status
+                elif 'status:' in line_lower:
+                    if 'status' not in parsed_data:
+                        parsed_data['status'] = []
+                    status = line.split(':', 1)[1].strip()
+                    if status not in parsed_data['status']:
+                        parsed_data['status'].append(status)
+
+                # DNSSEC
+                elif 'dnssec:' in line_lower and 'dnssec' not in parsed_data:
+                    parsed_data['dnssec'] = line.split(':', 1)[1].strip()
 
             return parsed_data
 
@@ -247,10 +259,13 @@ class WhoisParser:
     def _extract_field(self, text: str, patterns: list[str]) -> str | None:
         """Extract field value using multiple patterns."""
         for pattern in patterns:
-            match = re.search(pattern, text, re.IGNORECASE | re.MULTILINE)
+            # Add word boundary and line ending to make it less greedy
+            # Use MULTILINE flag and match only to end of line
+            match = re.search(pattern + r'\s*$', text, re.IGNORECASE | re.MULTILINE)
             if match:
                 value = match.group(1).strip()
-                if value and value not in ["", "-", "n/a", "not available"]:
+                # Only return if it's a reasonable value (not the entire text)
+                if value and value not in ['', '-', 'n/a', 'not available'] and len(value) < 200:
                     return value
         return None
 
@@ -258,11 +273,13 @@ class WhoisParser:
         """Extract all matching values for patterns."""
         matches = []
         for pattern in patterns:
-            found = re.findall(pattern, text, re.IGNORECASE | re.MULTILINE)
+            # Make sure we only capture the value on the same line
+            found = re.findall(pattern + r'\s*$', text, re.IGNORECASE | re.MULTILINE)
             for match in found:
-                value = match.strip()
-                if value and value not in ["", "-", "n/a", "not available"]:
-                    matches.append(value)
+                value = match.strip() if isinstance(match, str) else match
+                if value and value not in ['', '-', 'n/a', 'not available'] and len(value) < 200:
+                    if value not in matches:  # Avoid duplicates
+                        matches.append(value)
         return matches
 
     def _parse_date(self, date_str: str) -> str | None:
