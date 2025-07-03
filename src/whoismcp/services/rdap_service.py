@@ -346,7 +346,9 @@ class RDAPService:
             if e.response.status_code == 404:
                 raise ValueError(f"Resource not found: {path}") from e
             else:
-                raise RuntimeError(f"RDAP server error {e.response.status_code}: {e}") from e
+                raise RuntimeError(
+                    f"RDAP server error {e.response.status_code}: {e}"
+                ) from e
         except json.JSONDecodeError as e:
             raise ValueError(f"Invalid JSON response from RDAP server: {e}") from e
         except Exception as e:

@@ -378,9 +378,7 @@ class MCPServer:
                 ],
             }
 
-    async def process_request(
-        self, request: dict[str, Any]
-    ) -> dict[str, Any] | None:
+    async def process_request(self, request: dict[str, Any]) -> dict[str, Any] | None:
         """Process a JSON-RPC request."""
         method = request.get("method")
         params = request.get("params", {})
