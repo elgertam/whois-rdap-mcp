@@ -66,16 +66,15 @@ class TestMCPServer:
         result = await server._handle_whois_lookup(arguments)
 
         assert result["isError"] is True
-        assert "Missing required argument: target" in result["content"][0][
-            "text"]
+        assert "Missing required argument: target" in result["content"][0]["text"]
 
     @pytest.mark.asyncio
     async def test_whois_lookup_invalid_target(self, server):
         """Test whois lookup with invalid target."""
         arguments = {"target": "invalid-target-format"}
 
-        with patch.object(server.rate_limiter, 'acquire', return_value=True):
-            with patch.object(server.cache_service, 'get', return_value=None):
+        with patch.object(server.rate_limiter, "acquire", return_value=True):
+            with patch.object(server.cache_service, "get", return_value=None):
                 result = await server._handle_whois_lookup(arguments)
 
         assert result["isError"] is True
@@ -88,15 +87,14 @@ class TestMCPServer:
         result = await server._handle_rdap_lookup(arguments)
 
         assert result["isError"] is True
-        assert "Missing required argument: target" in result["content"][0][
-            "text"]
+        assert "Missing required argument: target" in result["content"][0]["text"]
 
     @pytest.mark.asyncio
     async def test_rate_limit_exceeded(self, server):
         """Test rate limit exceeded scenario."""
         arguments = {"target": "example.com"}
 
-        with patch.object(server.rate_limiter, 'acquire', return_value=False):
+        with patch.object(server.rate_limiter, "acquire", return_value=False):
             result = await server._handle_whois_lookup(arguments)
 
         assert result["isError"] is True
@@ -108,10 +106,8 @@ class TestMCPServer:
         cached_data = {"target": "example.com", "success": True}
         arguments = {"target": "example.com", "use_cache": True}
 
-        with patch.object(server.rate_limiter, 'acquire', return_value=True):
-            with patch.object(server.cache_service,
-                              'get',
-                              return_value=cached_data):
+        with patch.object(server.rate_limiter, "acquire", return_value=True):
+            with patch.object(server.cache_service, "get", return_value=cached_data):
                 result = await server._handle_whois_lookup(arguments)
 
         assert "content" in result
@@ -138,11 +134,8 @@ class TestMCPServer:
         request = {
             "jsonrpc": "2.0",
             "method": "tools/call",
-            "params": {
-                "name": "unknown_tool",
-                "arguments": {}
-            },
-            "id": 1
+            "params": {"name": "unknown_tool", "arguments": {}},
+            "id": 1,
         }
 
         result = await server.process_request(request)
@@ -165,7 +158,8 @@ class TestMCPServer:
         test_input = '{"jsonrpc": "2.0", "method": "test"}\n'
 
         import io
-        monkeypatch.setattr('sys.stdin', io.StringIO(test_input))
+
+        monkeypatch.setattr("sys.stdin", io.StringIO(test_input))
 
         message = server.read_message()
         assert message is not None
@@ -174,20 +168,22 @@ class TestMCPServer:
 
     def test_read_message_invalid_json(self, server, monkeypatch):
         """Test reading invalid JSON message from stdin."""
-        test_input = 'invalid json\n'
+        test_input = "invalid json\n"
 
         import io
-        monkeypatch.setattr('sys.stdin', io.StringIO(test_input))
+
+        monkeypatch.setattr("sys.stdin", io.StringIO(test_input))
 
         message = server.read_message()
         assert message is None
 
     def test_read_message_empty(self, server, monkeypatch):
         """Test reading empty input from stdin."""
-        test_input = ''
+        test_input = ""
 
         import io
-        monkeypatch.setattr('sys.stdin', io.StringIO(test_input))
+
+        monkeypatch.setattr("sys.stdin", io.StringIO(test_input))
 
         message = server.read_message()
         assert message is None

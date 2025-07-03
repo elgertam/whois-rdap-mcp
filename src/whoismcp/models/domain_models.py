@@ -9,48 +9,44 @@ from datetime import datetime
 
 class WhoisResult(BaseModel):
     """Result model for Whois lookups."""
-    
+
     target: str = Field(..., description="Domain name or IP address queried")
     target_type: str = Field(..., description="Type of target: 'domain' or 'ip'")
     whois_server: str = Field(..., description="Whois server used for the query")
     raw_response: str = Field(..., description="Raw Whois response text")
-    parsed_data: Dict[str, Any] = Field(default_factory=dict, 
-                                       description="Parsed Whois data")
+    parsed_data: Dict[str, Any] = Field(
+        default_factory=dict, description="Parsed Whois data"
+    )
     success: bool = Field(..., description="Whether the lookup was successful")
     error: Optional[str] = Field(None, description="Error message if lookup failed")
-    timestamp: datetime = Field(default_factory=datetime.utcnow,
-                               description="Timestamp of the lookup")
-    
-    model_config = ConfigDict(
-        json_encoders={
-            datetime: lambda v: v.isoformat()
-        }
+    timestamp: datetime = Field(
+        default_factory=datetime.utcnow, description="Timestamp of the lookup"
     )
+
+    model_config = ConfigDict(json_encoders={datetime: lambda v: v.isoformat()})
 
 
 class RDAPResult(BaseModel):
     """Result model for RDAP lookups."""
-    
+
     target: str = Field(..., description="Domain name or IP address queried")
     target_type: str = Field(..., description="Type of target: 'domain' or 'ip'")
     rdap_server: str = Field(..., description="RDAP server used for the query")
-    response_data: Dict[str, Any] = Field(default_factory=dict,
-                                         description="RDAP response data")
+    response_data: Dict[str, Any] = Field(
+        default_factory=dict, description="RDAP response data"
+    )
     success: bool = Field(..., description="Whether the lookup was successful")
     error: Optional[str] = Field(None, description="Error message if lookup failed")
-    timestamp: datetime = Field(default_factory=datetime.utcnow,
-                               description="Timestamp of the lookup")
-    
-    model_config = ConfigDict(
-        json_encoders={
-            datetime: lambda v: v.isoformat()
-        }
+    timestamp: datetime = Field(
+        default_factory=datetime.utcnow, description="Timestamp of the lookup"
     )
+
+    model_config = ConfigDict(json_encoders={datetime: lambda v: v.isoformat()})
 
 
 class DomainInfo(BaseModel):
     """Parsed domain information from Whois/RDAP data."""
-    
+
     domain_name: Optional[str] = None
     registrar: Optional[str] = None
     registrant_name: Optional[str] = None
@@ -64,17 +60,15 @@ class DomainInfo(BaseModel):
     updated_date: Optional[datetime] = None
     status: List[str] = Field(default_factory=list)
     dnssec: Optional[str] = None
-    
+
     model_config = ConfigDict(
-        json_encoders={
-            datetime: lambda v: v.isoformat() if v else None
-        }
+        json_encoders={datetime: lambda v: v.isoformat() if v else None}
     )
 
 
 class IPInfo(BaseModel):
     """Parsed IP information from Whois/RDAP data."""
-    
+
     ip_address: Optional[str] = None
     network_range: Optional[str] = None
     network_name: Optional[str] = None
@@ -85,9 +79,7 @@ class IPInfo(BaseModel):
     abuse_contact: Optional[str] = None
     registration_date: Optional[datetime] = None
     updated_date: Optional[datetime] = None
-    
+
     model_config = ConfigDict(
-        json_encoders={
-            datetime: lambda v: v.isoformat() if v else None
-        }
+        json_encoders={datetime: lambda v: v.isoformat() if v else None}
     )

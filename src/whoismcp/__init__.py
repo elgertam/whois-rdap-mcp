@@ -15,11 +15,11 @@ from .models import WhoisResult, RDAPResult, DomainInfo, IPInfo
 
 __all__ = [
     "Config",
-    "WhoisService", 
+    "WhoisService",
     "RDAPService",
     "CacheService",
     "WhoisResult",
-    "RDAPResult", 
+    "RDAPResult",
     "DomainInfo",
     "IPInfo",
 ]

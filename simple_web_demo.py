@@ -9,38 +9,39 @@ import json
 import anyio
 from http.server import HTTPServer, BaseHTTPRequestHandler
 
+
 class SimpleDemo(BaseHTTPRequestHandler):
     def do_GET(self):
         """Handle GET requests."""
-        if self.path == '/':
+        if self.path == "/":
             self._serve_demo_page()
-        elif self.path == '/health':
+        elif self.path == "/health":
             self._serve_health_check()
-        elif self.path == '/test':
+        elif self.path == "/test":
             self._test_mcp_connection()
         else:
             self._serve_404()
-    
+
     def do_HEAD(self):
         """Handle HEAD requests."""
-        if self.path == '/':
+        if self.path == "/":
             self.send_response(200)
-            self.send_header('Content-type', 'text/html; charset=utf-8')
-            self.send_header('Cache-Control', 'no-cache')
+            self.send_header("Content-type", "text/html; charset=utf-8")
+            self.send_header("Cache-Control", "no-cache")
             self.end_headers()
-        elif self.path == '/health':
+        elif self.path == "/health":
             self.send_response(200)
-            self.send_header('Content-type', 'application/json; charset=utf-8')
+            self.send_header("Content-type", "application/json; charset=utf-8")
             self.end_headers()
-        elif self.path == '/test':
+        elif self.path == "/test":
             self.send_response(200)
-            self.send_header('Content-type', 'text/plain; charset=utf-8')
+            self.send_header("Content-type", "text/plain; charset=utf-8")
             self.end_headers()
         else:
             self.send_response(404)
-            self.send_header('Content-type', 'text/html; charset=utf-8')
+            self.send_header("Content-type", "text/html; charset=utf-8")
             self.end_headers()
-    
+
     def _serve_demo_page(self):
         """Serve simple demo page."""
         html = """
@@ -139,48 +140,49 @@ class SimpleDemo(BaseHTTPRequestHandler):
 </body>
 </html>
         """
-        
+
         self.send_response(200)
-        self.send_header('Content-type', 'text/html; charset=utf-8')
-        self.send_header('Cache-Control', 'no-cache')
+        self.send_header("Content-type", "text/html; charset=utf-8")
+        self.send_header("Cache-Control", "no-cache")
         self.end_headers()
-        self.wfile.write(html.encode('utf-8'))
-    
+        self.wfile.write(html.encode("utf-8"))
+
     def _serve_health_check(self):
         """Serve health check endpoint for deployment."""
         import datetime
+
         health_data = {
             "status": "healthy",
             "service": "MCP Whois/RDAP Server",
             "version": "1.0.0",
-            "timestamp": datetime.datetime.utcnow().isoformat() + "Z"
+            "timestamp": datetime.datetime.utcnow().isoformat() + "Z",
         }
-        
+
         self.send_response(200)
-        self.send_header('Content-type', 'application/json; charset=utf-8')
-        self.send_header('Cache-Control', 'no-cache')
+        self.send_header("Content-type", "application/json; charset=utf-8")
+        self.send_header("Cache-Control", "no-cache")
         self.end_headers()
-        self.wfile.write(json.dumps(health_data).encode('utf-8'))
-    
+        self.wfile.write(json.dumps(health_data).encode("utf-8"))
+
     def _test_mcp_connection(self):
         """Test connection to MCP server."""
         try:
             result = asyncio.run(self._perform_mcp_test())
             self.send_response(200)
-            self.send_header('Content-type', 'text/plain; charset=utf-8')
+            self.send_header("Content-type", "text/plain; charset=utf-8")
             self.end_headers()
-            self.wfile.write(result.encode('utf-8'))
+            self.wfile.write(result.encode("utf-8"))
         except Exception as e:
             self.send_response(500)
-            self.send_header('Content-type', 'text/plain; charset=utf-8')
+            self.send_header("Content-type", "text/plain; charset=utf-8")
             self.end_headers()
-            self.wfile.write(f"MCP test failed: {str(e)}".encode('utf-8'))
-    
+            self.wfile.write(f"MCP test failed: {str(e)}".encode("utf-8"))
+
     async def _perform_mcp_test(self):
         """Perform actual MCP connection test."""
         try:
             stream = await anyio.connect_tcp("localhost", 5001)
-            
+
             async with stream:
                 # Initialize
                 init_request = {
@@ -190,55 +192,53 @@ class SimpleDemo(BaseHTTPRequestHandler):
                     "params": {
                         "protocolVersion": "2024-11-05",
                         "capabilities": {},
-                        "clientInfo": {"name": "web-demo", "version": "1.0"}
-                    }
+                        "clientInfo": {"name": "web-demo", "version": "1.0"},
+                    },
                 }
-                
-                await stream.send((json.dumps(init_request) + '\n').encode('utf-8'))
+
+                await stream.send((json.dumps(init_request) + "\n").encode("utf-8"))
                 response = await stream.receive(4096)
-                init_response = json.loads(response.decode('utf-8'))
-                
-                server_info = init_response['result']['serverInfo']
-                
+                init_response = json.loads(response.decode("utf-8"))
+
+                server_info = init_response["result"]["serverInfo"]
+
                 # List tools
-                tools_request = {
-                    "jsonrpc": "2.0",
-                    "id": 2,
-                    "method": "tools/list"
-                }
-                
-                await stream.send((json.dumps(tools_request) + '\n').encode('utf-8'))
+                tools_request = {"jsonrpc": "2.0", "id": 2, "method": "tools/list"}
+
+                await stream.send((json.dumps(tools_request) + "\n").encode("utf-8"))
                 response = await stream.receive(4096)
-                tools_response = json.loads(response.decode('utf-8'))
-                
-                tools = [tool['name'] for tool in tools_response['result']['tools']]
-                
+                tools_response = json.loads(response.decode("utf-8"))
+
+                tools = [tool["name"] for tool in tools_response["result"]["tools"]]
+
                 return f"""MCP Connection Successful!
-Server: {server_info['name']} v{server_info['version']}
-Available Tools: {', '.join(tools)}
+Server: {server_info["name"]} v{server_info["version"]}
+Available Tools: {", ".join(tools)}
 Protocol: JSON-RPC 2.0 over TCP
 Port: 5001
 Status: Fully Operational"""
-                
+
         except Exception as e:
             return f"MCP Connection Failed: {str(e)}"
-    
+
     def _serve_404(self):
         """Serve 404 page."""
         self.send_response(404)
-        self.send_header('Content-type', 'text/html; charset=utf-8')
+        self.send_header("Content-type", "text/html; charset=utf-8")
         self.end_headers()
-        self.wfile.write('<h1>404 Not Found</h1>'.encode('utf-8'))
-    
+        self.wfile.write("<h1>404 Not Found</h1>".encode("utf-8"))
+
     def log_message(self, format, *args):
         """Override to reduce logging noise."""
         pass
 
+
 def start_demo():
     """Start the demo web server."""
-    server = HTTPServer(('0.0.0.0', 5000), SimpleDemo)
+    server = HTTPServer(("0.0.0.0", 5000), SimpleDemo)
     print("Demo web interface started on http://0.0.0.0:5000")
     server.serve_forever()
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     start_demo()

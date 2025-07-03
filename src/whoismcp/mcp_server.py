@@ -27,7 +27,7 @@ structlog.configure(
         structlog.processors.TimeStamper(fmt="iso"),
         structlog.processors.StackInfoRenderer(),
         structlog.processors.format_exc_info,
-        structlog.dev.ConsoleRenderer()
+        structlog.dev.ConsoleRenderer(),
     ],
     wrapper_class=structlog.stdlib.BoundLogger,
     logger_factory=structlog.stdlib.LoggerFactory(),
@@ -36,6 +36,7 @@ structlog.configure(
 
 # Get logger and ensure it uses stderr
 import logging
+
 logging.basicConfig(stream=sys.stderr, level=logging.INFO, force=True)
 logger = structlog.get_logger(__name__)
 
@@ -51,10 +52,7 @@ class MCPServer:
         self.rate_limiter = RateLimiter(self.config)
 
         # Server info
-        self.server_info = {
-            "name": "whoismcp",
-            "version": "1.0.0"
-        }
+        self.server_info = {"name": "whoismcp", "version": "1.0.0"}
 
         # Define available tools
         self.tools = [
@@ -66,16 +64,16 @@ class MCPServer:
                     "properties": {
                         "target": {
                             "type": "string",
-                            "description": "Domain name or IP address to lookup"
+                            "description": "Domain name or IP address to lookup",
                         },
                         "use_cache": {
                             "type": "boolean",
                             "description": "Whether to use cached results",
-                            "default": True
-                        }
+                            "default": True,
+                        },
                     },
-                    "required": ["target"]
-                }
+                    "required": ["target"],
+                },
             },
             {
                 "name": "rdap_lookup",
@@ -85,17 +83,17 @@ class MCPServer:
                     "properties": {
                         "target": {
                             "type": "string",
-                            "description": "Domain name or IP address to lookup"
+                            "description": "Domain name or IP address to lookup",
                         },
                         "use_cache": {
                             "type": "boolean",
                             "description": "Whether to use cached results",
-                            "default": True
-                        }
+                            "default": True,
+                        },
                     },
-                    "required": ["target"]
-                }
-            }
+                    "required": ["target"],
+                },
+            },
         ]
 
         # Define available resources
@@ -124,11 +122,8 @@ class MCPServer:
         """Handle MCP initialize request."""
         return {
             "protocolVersion": "2024-11-05",
-            "capabilities": {
-                "tools": {},
-                "resources": {}
-            },
-            "serverInfo": self.server_info
+            "capabilities": {"tools": {}, "resources": {}},
+            "serverInfo": self.server_info,
         }
 
     async def handle_list_tools(self) -> Dict[str, Any]:
@@ -152,19 +147,15 @@ class MCPServer:
             else:
                 return {
                     "isError": True,
-                    "content": [{
-                        "type": "text",
-                        "text": f"Unknown tool: {tool_name}"
-                    }]
+                    "content": [{"type": "text", "text": f"Unknown tool: {tool_name}"}],
                 }
         except Exception as e:
             logger.error("Tool call failed", tool=tool_name, error=str(e))
             return {
                 "isError": True,
-                "content": [{
-                    "type": "text",
-                    "text": f"Tool execution failed: {str(e)}"
-                }]
+                "content": [
+                    {"type": "text", "text": f"Tool execution failed: {str(e)}"}
+                ],
             }
 
     async def _handle_whois_lookup(self, arguments: Dict[str, Any]) -> Dict[str, Any]:
@@ -175,20 +166,21 @@ class MCPServer:
         if not target:
             return {
                 "isError": True,
-                "content": [{
-                    "type": "text",
-                    "text": "Missing required argument: target"
-                }]
+                "content": [
+                    {"type": "text", "text": "Missing required argument: target"}
+                ],
             }
 
         # Check rate limiting
         if not await self.rate_limiter.acquire("mcp_client"):
             return {
                 "isError": True,
-                "content": [{
-                    "type": "text",
-                    "text": "Rate limit exceeded. Please try again later."
-                }]
+                "content": [
+                    {
+                        "type": "text",
+                        "text": "Rate limit exceeded. Please try again later.",
+                    }
+                ],
             }
 
         # Check cache if enabled
@@ -197,10 +189,9 @@ class MCPServer:
             cached_result = await self.cache_service.get(cache_key)
             if cached_result:
                 return {
-                    "content": [{
-                        "type": "text",
-                        "text": json.dumps(cached_result, indent=2)
-                    }]
+                    "content": [
+                        {"type": "text", "text": json.dumps(cached_result, indent=2)}
+                    ]
                 }
 
         # Determine if target is domain or IP and call appropriate method
@@ -212,30 +203,31 @@ class MCPServer:
             else:
                 return {
                     "isError": True,
-                    "content": [{
-                        "type": "text",
-                        "text": f"Invalid target format: {target}. Must be a domain name or IP address."
-                    }]
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": f"Invalid target format: {target}. Must be a domain name or IP address.",
+                        }
+                    ],
                 }
 
             # Cache result if successful
-            if use_cache and result_dict.get('success'):
+            if use_cache and result_dict.get("success"):
                 await self.cache_service.set(cache_key, result_dict)
 
             return {
-                "content": [{
-                    "type": "text",
-                    "text": json.dumps(result_dict, indent=2, default=str)
-                }]
+                "content": [
+                    {
+                        "type": "text",
+                        "text": json.dumps(result_dict, indent=2, default=str),
+                    }
+                ]
             }
 
         except Exception as e:
             return {
                 "isError": True,
-                "content": [{
-                    "type": "text",
-                    "text": f"Whois lookup failed: {str(e)}"
-                }]
+                "content": [{"type": "text", "text": f"Whois lookup failed: {str(e)}"}],
             }
 
     async def _handle_rdap_lookup(self, arguments: Dict[str, Any]) -> Dict[str, Any]:
@@ -246,20 +238,21 @@ class MCPServer:
         if not target:
             return {
                 "isError": True,
-                "content": [{
-                    "type": "text",
-                    "text": "Missing required argument: target"
-                }]
+                "content": [
+                    {"type": "text", "text": "Missing required argument: target"}
+                ],
             }
 
         # Check rate limiting
         if not await self.rate_limiter.acquire("mcp_client"):
             return {
                 "isError": True,
-                "content": [{
-                    "type": "text",
-                    "text": "Rate limit exceeded. Please try again later."
-                }]
+                "content": [
+                    {
+                        "type": "text",
+                        "text": "Rate limit exceeded. Please try again later.",
+                    }
+                ],
             }
 
         # Check cache if enabled
@@ -268,10 +261,9 @@ class MCPServer:
             cached_result = await self.cache_service.get(cache_key)
             if cached_result:
                 return {
-                    "content": [{
-                        "type": "text",
-                        "text": json.dumps(cached_result, indent=2)
-                    }]
+                    "content": [
+                        {"type": "text", "text": json.dumps(cached_result, indent=2)}
+                    ]
                 }
 
         # Determine if target is domain or IP and call appropriate method
@@ -283,30 +275,31 @@ class MCPServer:
             else:
                 return {
                     "isError": True,
-                    "content": [{
-                        "type": "text",
-                        "text": f"Invalid target format: {target}. Must be a domain name or IP address."
-                    }]
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": f"Invalid target format: {target}. Must be a domain name or IP address.",
+                        }
+                    ],
                 }
 
             # Cache result if successful
-            if use_cache and result_dict.get('success'):
+            if use_cache and result_dict.get("success"):
                 await self.cache_service.set(cache_key, result_dict)
 
             return {
-                "content": [{
-                    "type": "text",
-                    "text": json.dumps(result_dict, indent=2, default=str)
-                }]
+                "content": [
+                    {
+                        "type": "text",
+                        "text": json.dumps(result_dict, indent=2, default=str),
+                    }
+                ]
             }
 
         except Exception as e:
             return {
                 "isError": True,
-                "content": [{
-                    "type": "text",
-                    "text": f"RDAP lookup failed: {str(e)}"
-                }]
+                "content": [{"type": "text", "text": f"RDAP lookup failed: {str(e)}"}],
             }
 
     async def handle_read_resource(self, params: Dict[str, Any]) -> Dict[str, Any]:
@@ -318,63 +311,77 @@ class MCPServer:
                 domain = uri.replace("whois://domain/", "")
                 result_dict = await self.whois_service.lookup_domain(domain)
                 return {
-                    "contents": [{
-                        "uri": uri,
-                        "mimeType": "application/json",
-                        "text": json.dumps(result_dict, indent=2, default=str)
-                    }]
+                    "contents": [
+                        {
+                            "uri": uri,
+                            "mimeType": "application/json",
+                            "text": json.dumps(result_dict, indent=2, default=str),
+                        }
+                    ]
                 }
             elif uri.startswith("whois://ip/"):
                 ip = uri.replace("whois://ip/", "")
                 result_dict = await self.whois_service.lookup_ip(ip)
                 return {
-                    "contents": [{
-                        "uri": uri,
-                        "mimeType": "application/json",
-                        "text": json.dumps(result_dict, indent=2, default=str)
-                    }]
+                    "contents": [
+                        {
+                            "uri": uri,
+                            "mimeType": "application/json",
+                            "text": json.dumps(result_dict, indent=2, default=str),
+                        }
+                    ]
                 }
             elif uri.startswith("rdap://domain/"):
                 domain = uri.replace("rdap://domain/", "")
                 result_dict = await self.rdap_service.lookup_domain(domain)
                 return {
-                    "contents": [{
-                        "uri": uri,
-                        "mimeType": "application/json",
-                        "text": json.dumps(result_dict, indent=2, default=str)
-                    }]
+                    "contents": [
+                        {
+                            "uri": uri,
+                            "mimeType": "application/json",
+                            "text": json.dumps(result_dict, indent=2, default=str),
+                        }
+                    ]
                 }
             elif uri.startswith("rdap://ip/"):
                 ip = uri.replace("rdap://ip/", "")
                 result_dict = await self.rdap_service.lookup_ip(ip)
                 return {
-                    "contents": [{
-                        "uri": uri,
-                        "mimeType": "application/json",
-                        "text": json.dumps(result_dict, indent=2, default=str)
-                    }]
+                    "contents": [
+                        {
+                            "uri": uri,
+                            "mimeType": "application/json",
+                            "text": json.dumps(result_dict, indent=2, default=str),
+                        }
+                    ]
                 }
             else:
                 return {
                     "isError": True,
-                    "contents": [{
-                        "uri": uri,
-                        "mimeType": "text/plain",
-                        "text": f"Unsupported resource URI: {uri}"
-                    }]
+                    "contents": [
+                        {
+                            "uri": uri,
+                            "mimeType": "text/plain",
+                            "text": f"Unsupported resource URI: {uri}",
+                        }
+                    ],
                 }
         except Exception as e:
             logger.error("Resource read failed", uri=uri, error=str(e))
             return {
                 "isError": True,
-                "contents": [{
-                    "uri": uri,
-                    "mimeType": "text/plain",
-                    "text": f"Failed to read resource: {str(e)}"
-                }]
+                "contents": [
+                    {
+                        "uri": uri,
+                        "mimeType": "text/plain",
+                        "text": f"Failed to read resource: {str(e)}",
+                    }
+                ],
             }
 
-    async def process_request(self, request: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    async def process_request(
+        self, request: Dict[str, Any]
+    ) -> Optional[Dict[str, Any]]:
         """Process a JSON-RPC request."""
         method = request.get("method")
         params = request.get("params", {})
@@ -404,27 +411,17 @@ class MCPServer:
                 return {
                     "jsonrpc": "2.0",
                     "id": request_id,
-                    "error": {
-                        "code": -32601,
-                        "message": f"Method not found: {method}"
-                    }
+                    "error": {"code": -32601, "message": f"Method not found: {method}"},
                 }
 
-            return {
-                "jsonrpc": "2.0",
-                "id": request_id,
-                "result": result
-            }
+            return {"jsonrpc": "2.0", "id": request_id, "result": result}
 
         except Exception as e:
             logger.error("Request processing failed", method=method, error=str(e))
             return {
                 "jsonrpc": "2.0",
                 "id": request_id,
-                "error": {
-                    "code": -32603,
-                    "message": f"Internal error: {str(e)}"
-                }
+                "error": {"code": -32603, "message": f"Internal error: {str(e)}"},
             }
 
     async def run(self) -> None:
@@ -456,6 +453,7 @@ class MCPServer:
 
 def main() -> None:
     """Main entry point."""
+
     async def run_server():
         server = MCPServer()
         await server.run()

@@ -90,8 +90,11 @@ class TestWhoisService:
         # Test ARIN range
         server = whois_service._get_ip_whois_server("8.8.8.8")
         assert server in [
-            "whois.arin.net", "whois.ripe.net", "whois.apnic.net",
-            "whois.lacnic.net", "whois.afrinic.net"
+            "whois.arin.net",
+            "whois.ripe.net",
+            "whois.apnic.net",
+            "whois.lacnic.net",
+            "whois.afrinic.net",
         ]
 
     @pytest.mark.asyncio
