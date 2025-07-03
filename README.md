@@ -89,16 +89,9 @@ Add to your MCP client configuration:
 - **`whois_lookup`**: Perform Whois lookup for domain or IP address
 - **`rdap_lookup`**: Perform RDAP lookup for domain or IP address
 
-### Available Resources
-
-- `whois://domain/{domain}` - Domain Whois information
-- `whois://ip/{ip}` - IP Whois information
-- `rdap://domain/{domain}` - Domain RDAP information
-- `rdap://ip/{ip}` - IP RDAP information
-
 ## Package Structure
 
-```
+```tree
 whoismcp/
 ├── src/whoismcp/           # Main package
 │   ├── __init__.py         # Package exports
