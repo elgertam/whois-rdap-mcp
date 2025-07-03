@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "whoismcp"
-version = "0.1.1"
+dynamic = ["version"]
 description = "Model Context Protocol Server for Whois and RDAP lookups"
 authors = [
     {name = "Whois MCP Server", email = "server@example.com"}
@@ -26,6 +26,7 @@ classifiers = [
 dependencies = [
     "anyio>=4.0.0",
     "click>=8.1.0",
+    "hatch>=1.14.1",
     "httpx>=0.24.0",
     "pydantic>=2.0.0",
     "structlog>=23.0.0",
@@ -49,6 +50,9 @@ whoismcp-server = "whoismcp.mcp_server:main"
 Homepage = "https://github.com/example/whoismcp"
 Repository = "https://github.com/example/whoismcp"
 "Bug Tracker" = "https://github.com/example/whoismcp/issues"
+
+[tool.hatch.version]
+path = "src/whoismcp/__init__.py"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/whoismcp"]
