@@ -340,17 +340,17 @@ class RDAPService:
 
             return data
 
-        except httpx.TimeoutException:
-            raise TimeoutError(f"RDAP query timeout for {server}")
+        except httpx.TimeoutException as te:
+            raise TimeoutError(f"RDAP query timeout for {server}") from te
         except httpx.HTTPStatusError as e:
             if e.response.status_code == 404:
-                raise ValueError(f"Resource not found: {path}")
+                raise ValueError(f"Resource not found: {path}") from e
             else:
-                raise RuntimeError(f"RDAP server error {e.response.status_code}: {e}")
+                raise RuntimeError(f"RDAP server error {e.response.status_code}: {e}") from e
         except json.JSONDecodeError as e:
-            raise ValueError(f"Invalid JSON response from RDAP server: {e}")
+            raise ValueError(f"Invalid JSON response from RDAP server: {e}") from e
         except Exception as e:
-            raise RuntimeError(f"RDAP query failed: {e}")
+            raise RuntimeError(f"RDAP query failed: {e}") from e
 
     async def close(self):
         """Close HTTP client and cleanup resources."""

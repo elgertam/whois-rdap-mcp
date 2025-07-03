@@ -274,6 +274,6 @@ class WhoisService:
             return ""
 
         except OSError as e:
-            raise ConnectionError(f"Failed to connect to {server}: {e}")
+            raise ConnectionError(f"Failed to connect to {server}: {e}") from e
         except Exception as e:
-            raise RuntimeError(f"Whois query failed for {server}: {e}")
+            raise RuntimeError(f"Whois query failed for {server}: {e}") from e

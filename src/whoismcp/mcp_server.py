@@ -6,6 +6,7 @@ This implements the Model Context Protocol specification for AI integration.
 
 import asyncio
 import json
+import logging
 import sys
 from typing import Any
 
@@ -34,9 +35,6 @@ structlog.configure(
     logger_factory=structlog.stdlib.LoggerFactory(),
     cache_logger_on_first_use=True,
 )
-
-# Get logger and ensure it uses stderr
-import logging
 
 logging.basicConfig(stream=sys.stderr, level=logging.INFO, force=True)
 logger = structlog.get_logger(__name__)

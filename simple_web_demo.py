@@ -70,39 +70,39 @@ class SimpleDemo(BaseHTTPRequestHandler):
     <div class="container">
         <h1>MCP Whois/RDAP Server</h1>
         <p><strong>Model Context Protocol Server for Domain and IP Address Lookups</strong></p>
-        
+
         <div class="status info">
             <strong>Important:</strong> This is a web demo interface only!<br>
             <strong>Actual MCP Server:</strong> Runs via stdio (standard input/output)<br>
             <strong>Usage:</strong> Execute ./mcp_server to start the real MCP server<br>
             <strong>Protocol:</strong> JSON-RPC 2.0 over stdin/stdout (MCP specification)
         </div>
-        
+
         <h2>Server Features</h2>
         <div class="feature"><strong>Whois Lookups:</strong> Asynchronous TCP connections to global registries (Verisign, ARIN, RIPE, etc.)</div>
         <div class="feature"><strong>RDAP Lookups:</strong> HTTPS requests to structured data endpoints with bootstrap discovery</div>
         <div class="feature"><strong>Caching System:</strong> In-memory LRU cache with TTL for performance optimization</div>
         <div class="feature"><strong>Rate Limiting:</strong> Token bucket system to protect registry servers</div>
         <div class="feature"><strong>Error Handling:</strong> Comprehensive error handling with structured logging</div>
-        
+
         <h2>Available Tools</h2>
         <div class="endpoint">whois_lookup(target, use_cache=true)</div>
         <div class="endpoint">rdap_lookup(target, use_cache=true)</div>
-        
+
         <h2>Protocol Endpoints</h2>
         <div class="endpoint">initialize - Initialize MCP connection</div>
         <div class="endpoint">tools/list - List available tools</div>
         <div class="endpoint">tools/call - Execute whois_lookup or rdap_lookup</div>
         <div class="endpoint">resources/list - List available resources</div>
         <div class="endpoint">resources/read - Read whois:// or rdap:// resources</div>
-        
+
         <h2>Health Check</h2>
         <div class="endpoint">GET /health - Server health status (for deployment monitoring)</div>
-        
+
         <h2>Verified Functionality</h2>
         <button onclick="testConnection()">Test MCP Connection</button>
         <div id="testResult"></div>
-        
+
         <h2>Test Results</h2>
         <div class="info">
             <strong>Comprehensive Test Suite: 7/8 tests passed</strong><br>
@@ -113,7 +113,7 @@ class SimpleDemo(BaseHTTPRequestHandler):
             • Cache and rate limiting systems<br>
             • Authentic data integration verified
         </div>
-        
+
         <h2>Real-World Data Sources</h2>
         <div class="info">
             <strong>Successfully tested with:</strong><br>
@@ -128,7 +128,7 @@ class SimpleDemo(BaseHTTPRequestHandler):
         async function testConnection() {
             const resultDiv = document.getElementById('testResult');
             resultDiv.innerHTML = '<div class="status info">Testing MCP server connection...</div>';
-            
+
             try {
                 const response = await fetch('/test');
                 const data = await response.text();
