@@ -2,9 +2,8 @@
 Input validation utilities for domain names and IP addresses.
 """
 
-import re
 import ipaddress
-from typing import Union, Tuple
+import re
 
 
 def is_valid_domain(domain: str) -> bool:
@@ -78,7 +77,7 @@ def is_valid_ipv6(ip_address: str) -> bool:
         return False
 
 
-def validate_domain(domain: str) -> Tuple[bool, str]:
+def validate_domain(domain: str) -> tuple[bool, str]:
     """Validate domain and return normalized version."""
     if not is_valid_domain(domain):
         return False, "Invalid domain name format"
@@ -91,7 +90,7 @@ def validate_domain(domain: str) -> Tuple[bool, str]:
     return True, normalized
 
 
-def validate_ip(ip_address: str) -> Tuple[bool, str]:
+def validate_ip(ip_address: str) -> tuple[bool, str]:
     """Validate IP address and return normalized version."""
     if not is_valid_ip(ip_address):
         return False, "Invalid IP address format"

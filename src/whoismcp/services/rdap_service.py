@@ -4,14 +4,14 @@ Handles HTTPS requests to RDAP servers for structured domain data.
 """
 
 import json
-from typing import Dict, Any, Optional, List
-import anyio
+from typing import Any
+
 import httpx
 import structlog
 
+from ..config import Config
 from ..models.domain_models import RDAPResult
 from ..utils.validators import is_valid_domain, is_valid_ip
-from ..config import Config
 
 logger = structlog.get_logger(__name__)
 
@@ -68,7 +68,7 @@ class RDAPService:
             )
         return self._http_client
 
-    async def lookup_domain(self, domain: str) -> Dict[str, Any]:
+    async def lookup_domain(self, domain: str) -> dict[str, Any]:
         """Perform RDAP lookup for a domain name."""
         if not is_valid_domain(domain):
             raise ValueError(f"Invalid domain name: {domain}")
@@ -125,7 +125,7 @@ class RDAPService:
                 error=str(e),
             ).model_dump(mode="json")
 
-    async def lookup_ip(self, ip_address: str) -> Dict[str, Any]:
+    async def lookup_ip(self, ip_address: str) -> dict[str, Any]:
         """Perform RDAP lookup for an IP address."""
         if not is_valid_ip(ip_address):
             raise ValueError(f"Invalid IP address: {ip_address}")
@@ -182,7 +182,7 @@ class RDAPService:
                 error=str(e),
             ).model_dump(mode="json")
 
-    async def _get_domain_rdap_servers(self, domain: str) -> List[str]:
+    async def _get_domain_rdap_servers(self, domain: str) -> list[str]:
         """Get RDAP servers for a domain using bootstrap registry."""
         try:
             # Try bootstrap registry first
@@ -199,7 +199,7 @@ class RDAPService:
         tld = domain.split(".")[-1].lower()
         return self.RDAP_SERVERS.get(tld, [f"https://rdap.nic.{tld}/"])
 
-    async def _get_ip_rdap_servers(self, ip_address: str) -> List[str]:
+    async def _get_ip_rdap_servers(self, ip_address: str) -> list[str]:
         """Get RDAP servers for an IP address using bootstrap registry."""
         try:
             # Try bootstrap registry first
@@ -216,7 +216,7 @@ class RDAPService:
         registry = self._get_ip_registry(ip_address)
         return self.RDAP_SERVERS.get(registry, self.RDAP_SERVERS["arin"])
 
-    async def _get_bootstrap_data(self, registry_type: str) -> Optional[Dict[str, Any]]:
+    async def _get_bootstrap_data(self, registry_type: str) -> dict[str, Any] | None:
         """Get bootstrap data from IANA registry."""
         if registry_type in self._bootstrap_cache:
             return self._bootstrap_cache[registry_type]
@@ -243,8 +243,8 @@ class RDAPService:
             return None
 
     def _find_servers_in_bootstrap(
-        self, bootstrap_data: Dict[str, Any], target: str
-    ) -> List[str]:
+        self, bootstrap_data: dict[str, Any], target: str
+    ) -> list[str]:
         """Find RDAP servers in bootstrap data for a target."""
         services = bootstrap_data.get("services", [])
 
@@ -300,7 +300,7 @@ class RDAPService:
         except Exception:
             return "arin"  # Default fallback
 
-    async def _query_rdap_server(self, server: str, path: str) -> Dict[str, Any]:
+    async def _query_rdap_server(self, server: str, path: str) -> dict[str, Any]:
         """Query an RDAP server and return parsed response."""
         try:
             # Construct full URL

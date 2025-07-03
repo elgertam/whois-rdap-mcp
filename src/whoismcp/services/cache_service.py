@@ -5,7 +5,8 @@ Implements in-memory LRU cache with TTL support.
 
 import asyncio
 import time
-from typing import Dict, Any, Optional, Tuple, List
+from typing import Any
+
 import structlog
 
 from ..config import Config
@@ -38,8 +39,8 @@ class CacheService:
 
     def __init__(self, config: Config):
         self.config = config
-        self._cache: Dict[str, CacheEntry] = {}
-        self._access_order: List[str] = []
+        self._cache: dict[str, CacheEntry] = {}
+        self._access_order: list[str] = []
         self._lock = asyncio.Lock()
         self._cleanup_task = None
         self._started = False
@@ -54,7 +55,7 @@ class CacheService:
                 cleanup_interval=self.config.cache_cleanup_interval,
             )
 
-    async def get(self, key: str) -> Optional[Any]:
+    async def get(self, key: str) -> Any | None:
         """Get value from cache."""
         async with self._lock:
             entry = self._cache.get(key)
@@ -76,7 +77,7 @@ class CacheService:
 
             return entry.access()
 
-    async def set(self, key: str, value: Any, ttl: Optional[int] = None) -> None:
+    async def set(self, key: str, value: Any, ttl: int | None = None) -> None:
         """Set value in cache with optional TTL."""
         if ttl is None:
             ttl = self.config.cache_ttl
@@ -113,7 +114,7 @@ class CacheService:
             self._access_order.clear()
             logger.info("Cache cleared")
 
-    async def stats(self) -> Dict[str, Any]:
+    async def stats(self) -> dict[str, Any]:
         """Get cache statistics."""
         async with self._lock:
             total_entries = len(self._cache)

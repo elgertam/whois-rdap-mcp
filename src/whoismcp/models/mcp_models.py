@@ -2,7 +2,8 @@
 Data models for Model Context Protocol communication.
 """
 
-from typing import Dict, Any, Optional, List, Union
+from typing import Any
+
 from pydantic import BaseModel, Field
 
 
@@ -10,32 +11,32 @@ class MCPRequest(BaseModel):
     """Model Context Protocol request."""
 
     jsonrpc: str = Field(default="2.0", description="JSON-RPC version")
-    id: Union[str, int] = Field(..., description="Request ID")
+    id: str | int = Field(..., description="Request ID")
     method: str = Field(..., description="MCP method name")
-    params: Optional[Dict[str, Any]] = Field(None, description="Request parameters")
+    params: dict[str, Any] | None = Field(None, description="Request parameters")
 
 
 class MCPResponse(BaseModel):
     """Model Context Protocol response."""
 
     jsonrpc: str = Field(default="2.0", description="JSON-RPC version")
-    id: Union[str, int] = Field(..., description="Request ID")
-    result: Optional[Dict[str, Any]] = Field(None, description="Response result")
+    id: str | int = Field(..., description="Request ID")
+    result: dict[str, Any] | None = Field(None, description="Response result")
 
 
 class MCPError(BaseModel):
     """Model Context Protocol error response."""
 
     jsonrpc: str = Field(default="2.0", description="JSON-RPC version")
-    id: Optional[Union[str, int]] = Field(None, description="Request ID")
-    error: Dict[str, Any] = Field(..., description="Error details")
+    id: str | int | None = Field(None, description="Request ID")
+    error: dict[str, Any] = Field(..., description="Error details")
 
     def __init__(
         self,
-        id: Optional[Union[str, int]] = None,
+        id: str | int | None = None,
         error_code: int = -32603,
         message: str = "Internal error",
-        data: Optional[Any] = None,
+        data: Any | None = None,
         **kwargs,
     ):
         error_dict = {"code": error_code, "message": message}
@@ -59,7 +60,7 @@ class ToolDefinition(BaseModel):
 
     name: str = Field(..., description="Tool name")
     description: str = Field(..., description="Tool description")
-    inputSchema: Dict[str, Any] = Field(..., description="JSON schema for tool input")
+    inputSchema: dict[str, Any] = Field(..., description="JSON schema for tool input")
 
 
 class WhoisRequest(BaseModel):

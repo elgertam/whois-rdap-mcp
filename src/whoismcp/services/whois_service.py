@@ -3,16 +3,15 @@ Whois service implementation for domain and IP lookups.
 Handles asynchronous TCP connections to Whois servers.
 """
 
-import asyncio
-import socket
-from typing import Dict, Any, Optional
+from typing import Any
+
 import anyio
 import structlog
 
-from ..models.domain_models import WhoisResult
-from ..utils.validators import is_valid_domain, is_valid_ip
-from ..utils.parsers import WhoisParser
 from ..config import Config
+from ..models.domain_models import WhoisResult
+from ..utils.parsers import WhoisParser
+from ..utils.validators import is_valid_domain, is_valid_ip
 
 logger = structlog.get_logger(__name__)
 
@@ -82,7 +81,7 @@ class WhoisService:
         self.config = config
         self.parser = WhoisParser()
 
-    async def lookup_domain(self, domain: str) -> Dict[str, Any]:
+    async def lookup_domain(self, domain: str) -> dict[str, Any]:
         """Perform Whois lookup for a domain name."""
         if not is_valid_domain(domain):
             raise ValueError(f"Invalid domain name: {domain}")
@@ -131,7 +130,7 @@ class WhoisService:
                 error=str(e),
             ).model_dump(mode="json")
 
-    async def lookup_ip(self, ip_address: str) -> Dict[str, Any]:
+    async def lookup_ip(self, ip_address: str) -> dict[str, Any]:
         """Perform Whois lookup for an IP address."""
         if not is_valid_ip(ip_address):
             raise ValueError(f"Invalid IP address: {ip_address}")
@@ -247,7 +246,7 @@ class WhoisService:
 
                 async with stream:
                     # Send query
-                    query_bytes = f"{query}\r\n".encode("utf-8")
+                    query_bytes = f"{query}\r\n".encode()
                     await stream.send(query_bytes)
 
                     # Read response

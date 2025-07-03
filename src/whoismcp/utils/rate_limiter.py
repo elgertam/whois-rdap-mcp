@@ -4,8 +4,9 @@ Rate limiting utilities to respect registry policies.
 
 import asyncio
 import time
-from typing import Dict, DefaultDict, Any, Optional
 from collections import defaultdict
+from typing import Any
+
 import structlog
 
 from ..config import Config
@@ -50,7 +51,7 @@ class RateLimiter:
         self.config = config
 
         # Per-client rate limiting
-        self.client_buckets: Dict[str, TokenBucket] = {}
+        self.client_buckets: dict[str, TokenBucket] = {}
 
         # Global rate limiting
         self.global_bucket = TokenBucket(
@@ -59,8 +60,8 @@ class RateLimiter:
         )
 
         # Request tracking
-        self.request_counts: DefaultDict[str, int] = defaultdict(int)
-        self.request_windows: DefaultDict[str, float] = defaultdict(float)
+        self.request_counts: defaultdict[str, int] = defaultdict(int)
+        self.request_windows: defaultdict[str, float] = defaultdict(float)
 
         # Cleanup task
         self._cleanup_task = asyncio.create_task(self._cleanup_loop())
@@ -116,7 +117,7 @@ class RateLimiter:
 
         self.request_counts[client_id] += 1
 
-    async def get_stats(self, client_id: Optional[str] = None) -> Dict[str, Any]:
+    async def get_stats(self, client_id: str | None = None) -> dict[str, Any]:
         """Get rate limiting statistics."""
         if client_id:
             # Per-client stats

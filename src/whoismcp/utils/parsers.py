@@ -4,7 +4,8 @@ Parsing utilities for Whois and RDAP responses.
 
 import re
 from datetime import datetime
-from typing import Dict, Any, List, Optional
+from typing import Any
+
 import structlog
 
 from ..models.domain_models import DomainInfo, IPInfo
@@ -145,7 +146,7 @@ class WhoisParser:
         "%Y%m%d",
     ]
 
-    def parse_domain_whois(self, whois_text: str) -> Dict[str, Any]:
+    def parse_domain_whois(self, whois_text: str) -> dict[str, Any]:
         """Parse domain Whois response."""
         try:
             # Normalize text
@@ -196,7 +197,7 @@ class WhoisParser:
             logger.warning("Failed to parse domain whois", error=str(e))
             return {}
 
-    def parse_ip_whois(self, whois_text: str) -> Dict[str, Any]:
+    def parse_ip_whois(self, whois_text: str) -> dict[str, Any]:
         """Parse IP Whois response."""
         try:
             # Normalize text
@@ -243,7 +244,7 @@ class WhoisParser:
 
         return "\n".join(filtered_lines)
 
-    def _extract_field(self, text: str, patterns: List[str]) -> Optional[str]:
+    def _extract_field(self, text: str, patterns: list[str]) -> str | None:
         """Extract field value using multiple patterns."""
         for pattern in patterns:
             match = re.search(pattern, text, re.IGNORECASE | re.MULTILINE)
@@ -253,7 +254,7 @@ class WhoisParser:
                     return value
         return None
 
-    def _extract_all_matches(self, text: str, patterns: List[str]) -> List[str]:
+    def _extract_all_matches(self, text: str, patterns: list[str]) -> list[str]:
         """Extract all matching values for patterns."""
         matches = []
         for pattern in patterns:
@@ -264,7 +265,7 @@ class WhoisParser:
                     matches.append(value)
         return matches
 
-    def _parse_date(self, date_str: str) -> Optional[str]:
+    def _parse_date(self, date_str: str) -> str | None:
         """Parse date string into ISO format."""
         if not date_str:
             return None
@@ -293,7 +294,7 @@ class RDAPParser:
     """Parser for RDAP response data."""
 
     @staticmethod
-    def parse_domain_rdap(rdap_data: Dict[str, Any]) -> DomainInfo:
+    def parse_domain_rdap(rdap_data: dict[str, Any]) -> DomainInfo:
         """Parse RDAP domain response into DomainInfo."""
         try:
             domain_info = DomainInfo()
@@ -339,7 +340,7 @@ class RDAPParser:
             return DomainInfo()
 
     @staticmethod
-    def parse_ip_rdap(rdap_data: Dict[str, Any]) -> IPInfo:
+    def parse_ip_rdap(rdap_data: dict[str, Any]) -> IPInfo:
         """Parse RDAP IP response into IPInfo."""
         try:
             ip_info = IPInfo()
@@ -378,7 +379,7 @@ class RDAPParser:
             return IPInfo()
 
     @staticmethod
-    def _parse_entities(entities: List[Dict[str, Any]], domain_info: DomainInfo):
+    def _parse_entities(entities: list[dict[str, Any]], domain_info: DomainInfo):
         """Parse RDAP entities for domain information."""
         for entity in entities:
             roles = entity.get("roles", [])
@@ -406,7 +407,7 @@ class RDAPParser:
                     )
 
     @staticmethod
-    def _parse_ip_entities(entities: List[Dict[str, Any]], ip_info: IPInfo):
+    def _parse_ip_entities(entities: list[dict[str, Any]], ip_info: IPInfo):
         """Parse RDAP entities for IP information."""
         for entity in entities:
             roles = entity.get("roles", [])
@@ -432,7 +433,7 @@ class RDAPParser:
                     ip_info.abuse_contact = contact_info.get("email")
 
     @staticmethod
-    def _parse_vcard(vcard_data: List[List]) -> Dict[str, str]:
+    def _parse_vcard(vcard_data: list[list]) -> dict[str, str]:
         """Parse vCard data from RDAP response."""
         contact_info = {}
 
@@ -451,7 +452,7 @@ class RDAPParser:
         return contact_info
 
     @staticmethod
-    def _parse_events(events: List[Dict[str, Any]], domain_info: DomainInfo):
+    def _parse_events(events: list[dict[str, Any]], domain_info: DomainInfo):
         """Parse RDAP events for domain dates."""
         for event in events:
             action = event.get("eventAction")
@@ -473,7 +474,7 @@ class RDAPParser:
                     logger.warning("Failed to parse event date", date=date_str)
 
     @staticmethod
-    def _parse_ip_events(events: List[Dict[str, Any]], ip_info: IPInfo):
+    def _parse_ip_events(events: list[dict[str, Any]], ip_info: IPInfo):
         """Parse RDAP events for IP dates."""
         for event in events:
             action = event.get("eventAction")

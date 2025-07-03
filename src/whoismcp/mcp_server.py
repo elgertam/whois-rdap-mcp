@@ -7,13 +7,14 @@ This implements the Model Context Protocol specification for AI integration.
 import asyncio
 import json
 import sys
-from typing import Dict, Any, Optional
+from typing import Any
+
 import structlog
 
 from whoismcp.config import Config
-from whoismcp.services.whois_service import WhoisService
-from whoismcp.services.rdap_service import RDAPService
 from whoismcp.services.cache_service import CacheService
+from whoismcp.services.rdap_service import RDAPService
+from whoismcp.services.whois_service import WhoisService
 from whoismcp.utils.rate_limiter import RateLimiter
 from whoismcp.utils.validators import is_valid_domain, is_valid_ip
 
@@ -99,12 +100,12 @@ class MCPServer:
         # Define available resources
         self.resources = []
 
-    def write_message(self, message: Dict[str, Any]) -> None:
+    def write_message(self, message: dict[str, Any]) -> None:
         """Write a message to stdout."""
         json_str = json.dumps(message)
         print(json_str, flush=True)
 
-    def read_message(self) -> Optional[Dict[str, Any]]:
+    def read_message(self) -> dict[str, Any] | None:
         """Read a message from stdin."""
         try:
             line = sys.stdin.readline()
@@ -118,7 +119,7 @@ class MCPServer:
             logger.error("Failed to read message", error=str(e))
             return None
 
-    async def handle_initialize(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    async def handle_initialize(self, params: dict[str, Any]) -> dict[str, Any]:
         """Handle MCP initialize request."""
         return {
             "protocolVersion": "2024-11-05",
@@ -126,15 +127,15 @@ class MCPServer:
             "serverInfo": self.server_info,
         }
 
-    async def handle_list_tools(self) -> Dict[str, Any]:
+    async def handle_list_tools(self) -> dict[str, Any]:
         """Handle tools/list request."""
         return {"tools": self.tools}
 
-    async def handle_list_resources(self) -> Dict[str, Any]:
+    async def handle_list_resources(self) -> dict[str, Any]:
         """Handle resources/list request."""
         return {"resources": self.resources}
 
-    async def handle_call_tool(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    async def handle_call_tool(self, params: dict[str, Any]) -> dict[str, Any]:
         """Handle tools/call request."""
         tool_name = params.get("name")
         arguments = params.get("arguments", {})
@@ -158,7 +159,7 @@ class MCPServer:
                 ],
             }
 
-    async def _handle_whois_lookup(self, arguments: Dict[str, Any]) -> Dict[str, Any]:
+    async def _handle_whois_lookup(self, arguments: dict[str, Any]) -> dict[str, Any]:
         """Handle whois lookup tool call."""
         target = arguments.get("target")
         use_cache = arguments.get("use_cache", True)
@@ -230,7 +231,7 @@ class MCPServer:
                 "content": [{"type": "text", "text": f"Whois lookup failed: {str(e)}"}],
             }
 
-    async def _handle_rdap_lookup(self, arguments: Dict[str, Any]) -> Dict[str, Any]:
+    async def _handle_rdap_lookup(self, arguments: dict[str, Any]) -> dict[str, Any]:
         """Handle RDAP lookup tool call."""
         target = arguments.get("target")
         use_cache = arguments.get("use_cache", True)
@@ -302,7 +303,7 @@ class MCPServer:
                 "content": [{"type": "text", "text": f"RDAP lookup failed: {str(e)}"}],
             }
 
-    async def handle_read_resource(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    async def handle_read_resource(self, params: dict[str, Any]) -> dict[str, Any]:
         """Handle resources/read request."""
         uri = params.get("uri", "")
 
@@ -380,8 +381,8 @@ class MCPServer:
             }
 
     async def process_request(
-        self, request: Dict[str, Any]
-    ) -> Optional[Dict[str, Any]]:
+        self, request: dict[str, Any]
+    ) -> dict[str, Any] | None:
         """Process a JSON-RPC request."""
         method = request.get("method")
         params = request.get("params", {})

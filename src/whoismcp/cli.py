@@ -6,16 +6,13 @@ Command-line interface for the WhoisMCP server.
 import asyncio
 import json
 import sys
-from pathlib import Path
-from typing import Optional
 
 import click
 import structlog
 
 from whoismcp.config import Config
-from whoismcp.services.whois_service import WhoisService
 from whoismcp.services.rdap_service import RDAPService
-from whoismcp.services.cache_service import CacheService
+from whoismcp.services.whois_service import WhoisService
 from whoismcp.utils.validators import is_valid_domain, is_valid_ip
 
 logger = structlog.get_logger(__name__)

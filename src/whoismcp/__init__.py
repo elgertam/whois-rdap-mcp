@@ -10,8 +10,8 @@ __author__ = "Whois MCP Server"
 __email__ = "server@example.com"
 
 from .config import Config
-from .services import WhoisService, RDAPService, CacheService
-from .models import WhoisResult, RDAPResult, DomainInfo, IPInfo
+from .models import DomainInfo, IPInfo, RDAPResult, WhoisResult
+from .services import CacheService, RDAPService, WhoisService
 
 __all__ = [
     "Config",

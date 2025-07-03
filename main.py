@@ -5,8 +5,8 @@ This provides a web interface demonstrating the WhoisMCP functionality.
 """
 
 import os
-import sys
 import signal
+import sys
 from pathlib import Path
 
 # Add the src directory to Python path for the whoismcp package

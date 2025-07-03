@@ -6,8 +6,9 @@ This runs on port 8000 to avoid conflicts.
 
 import asyncio
 import json
+from http.server import BaseHTTPRequestHandler, HTTPServer
+
 import anyio
-from http.server import HTTPServer, BaseHTTPRequestHandler
 
 
 class SimpleDemo(BaseHTTPRequestHandler):
@@ -176,7 +177,7 @@ class SimpleDemo(BaseHTTPRequestHandler):
             self.send_response(500)
             self.send_header("Content-type", "text/plain; charset=utf-8")
             self.end_headers()
-            self.wfile.write(f"MCP test failed: {str(e)}".encode("utf-8"))
+            self.wfile.write(f"MCP test failed: {str(e)}".encode())
 
     async def _perform_mcp_test(self):
         """Perform actual MCP connection test."""
@@ -226,7 +227,7 @@ Status: Fully Operational"""
         self.send_response(404)
         self.send_header("Content-type", "text/html; charset=utf-8")
         self.end_headers()
-        self.wfile.write("<h1>404 Not Found</h1>".encode("utf-8"))
+        self.wfile.write(b"<h1>404 Not Found</h1>")
 
     def log_message(self, format, *args):
         """Override to reduce logging noise."""

@@ -3,8 +3,8 @@ Configuration management for the MCP server.
 """
 
 import os
-from typing import Dict, Any
 from dataclasses import dataclass, field
+from typing import Any
 
 
 @dataclass
@@ -67,7 +67,7 @@ class Config:
         default_factory=lambda: float(os.getenv("RETRY_DELAY", "1.0"))
     )
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert config to dictionary."""
         return {
             "bind_host": self.bind_host,
