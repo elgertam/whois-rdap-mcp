@@ -42,20 +42,20 @@ logger = structlog.get_logger(__name__)
 
 class MCPServer:
     """MCP Server that communicates via stdin/stdout."""
-    
+
     def __init__(self) -> None:
         self.config = Config.from_env()
         self.whois_service = WhoisService(self.config)
         self.rdap_service = RDAPService(self.config)
         self.cache_service = CacheService(self.config)
         self.rate_limiter = RateLimiter(self.config)
-        
+
         # Server info
         self.server_info = {
             "name": "whoismcp",
             "version": "1.0.0"
         }
-        
+
         # Define available tools
         self.tools = [
             {
@@ -97,7 +97,7 @@ class MCPServer:
                 }
             }
         ]
-        
+
         # Define available resources
         self.resources = [
             {
@@ -108,7 +108,7 @@ class MCPServer:
             },
             {
                 "uri": "whois://ip/{ip}",
-                "name": "IP Whois Information", 
+                "name": "IP Whois Information",
                 "description": "Retrieve Whois information for an IP address",
                 "mimeType": "application/json"
             },
@@ -121,7 +121,7 @@ class MCPServer:
             {
                 "uri": "rdap://ip/{ip}",
                 "name": "IP RDAP Information",
-                "description": "Retrieve RDAP information for an IP address", 
+                "description": "Retrieve RDAP information for an IP address",
                 "mimeType": "application/json"
             }
         ]
@@ -130,7 +130,7 @@ class MCPServer:
         """Write a message to stdout."""
         json_str = json.dumps(message)
         print(json_str, flush=True)
-        
+
     def read_message(self) -> Optional[Dict[str, Any]]:
         """Read a message from stdin."""
         try:
@@ -168,7 +168,7 @@ class MCPServer:
         """Handle tools/call request."""
         tool_name = params.get("name")
         arguments = params.get("arguments", {})
-        
+
         try:
             if tool_name == "whois_lookup":
                 return await self._handle_whois_lookup(arguments)
@@ -187,7 +187,7 @@ class MCPServer:
             return {
                 "isError": True,
                 "content": [{
-                    "type": "text", 
+                    "type": "text",
                     "text": f"Tool execution failed: {str(e)}"
                 }]
             }
@@ -196,7 +196,7 @@ class MCPServer:
         """Handle whois lookup tool call."""
         target = arguments.get("target")
         use_cache = arguments.get("use_cache", True)
-        
+
         if not target:
             return {
                 "isError": True,
@@ -205,7 +205,7 @@ class MCPServer:
                     "text": "Missing required argument: target"
                 }]
             }
-        
+
         # Check rate limiting
         if not await self.rate_limiter.acquire("mcp_client"):
             return {
@@ -215,7 +215,7 @@ class MCPServer:
                     "text": "Rate limit exceeded. Please try again later."
                 }]
             }
-        
+
         # Check cache if enabled
         cache_key = f"whois:{target}"
         if use_cache:
@@ -227,7 +227,7 @@ class MCPServer:
                         "text": json.dumps(cached_result, indent=2)
                     }]
                 }
-        
+
         # Determine if target is domain or IP and call appropriate method
         try:
             if is_valid_domain(target):
@@ -242,18 +242,18 @@ class MCPServer:
                         "text": f"Invalid target format: {target}. Must be a domain name or IP address."
                     }]
                 }
-            
+
             # Cache result if successful
             if use_cache and result_dict.get('success'):
                 await self.cache_service.set(cache_key, result_dict)
-            
+
             return {
                 "content": [{
                     "type": "text",
                     "text": json.dumps(result_dict, indent=2, default=str)
                 }]
             }
-            
+
         except Exception as e:
             return {
                 "isError": True,
@@ -267,7 +267,7 @@ class MCPServer:
         """Handle RDAP lookup tool call."""
         target = arguments.get("target")
         use_cache = arguments.get("use_cache", True)
-        
+
         if not target:
             return {
                 "isError": True,
@@ -276,7 +276,7 @@ class MCPServer:
                     "text": "Missing required argument: target"
                 }]
             }
-        
+
         # Check rate limiting
         if not await self.rate_limiter.acquire("mcp_client"):
             return {
@@ -286,7 +286,7 @@ class MCPServer:
                     "text": "Rate limit exceeded. Please try again later."
                 }]
             }
-        
+
         # Check cache if enabled
         cache_key = f"rdap:{target}"
         if use_cache:
@@ -298,7 +298,7 @@ class MCPServer:
                         "text": json.dumps(cached_result, indent=2)
                     }]
                 }
-        
+
         # Determine if target is domain or IP and call appropriate method
         try:
             if is_valid_domain(target):
@@ -313,18 +313,18 @@ class MCPServer:
                         "text": f"Invalid target format: {target}. Must be a domain name or IP address."
                     }]
                 }
-            
+
             # Cache result if successful
             if use_cache and result_dict.get('success'):
                 await self.cache_service.set(cache_key, result_dict)
-            
+
             return {
                 "content": [{
                     "type": "text",
                     "text": json.dumps(result_dict, indent=2, default=str)
                 }]
             }
-            
+
         except Exception as e:
             return {
                 "isError": True,
@@ -337,7 +337,7 @@ class MCPServer:
     async def handle_read_resource(self, params: Dict[str, Any]) -> Dict[str, Any]:
         """Handle resources/read request."""
         uri = params.get("uri", "")
-        
+
         try:
             if uri.startswith("whois://domain/"):
                 domain = uri.replace("whois://domain/", "")
@@ -404,7 +404,16 @@ class MCPServer:
         method = request.get("method")
         params = request.get("params", {})
         request_id = request.get("id")
-        
+
+        if request_id is None:
+            logger.debug(f"Received notification {method}")
+
+            if method == "notifications/initialized":
+                # Handle initialize notification
+                logger.info("Client initialized notification received")
+
+            return None
+
         try:
             if method == "initialize":
                 result = await self.handle_initialize(params)
@@ -425,13 +434,13 @@ class MCPServer:
                         "message": f"Method not found: {method}"
                     }
                 }
-            
+
             return {
                 "jsonrpc": "2.0",
                 "id": request_id,
                 "result": result
             }
-            
+
         except Exception as e:
             logger.error("Request processing failed", method=method, error=str(e))
             return {
@@ -446,22 +455,23 @@ class MCPServer:
     async def run(self) -> None:
         """Main server loop."""
         logger.info("MCP stdio server starting")
-        
+
         # Start cache service
         await self.cache_service.start()
-        
+
         try:
             while True:
                 # Read request from stdin
                 request = self.read_message()
                 if request is None:
                     break
-                
+
                 # Process request
                 response = await self.process_request(request)
-                if response:
+
+                if response is not None:
                     self.write_message(response)
-                    
+
         except KeyboardInterrupt:
             logger.info("Server shutting down")
         except Exception as e:
@@ -474,7 +484,7 @@ def main() -> None:
     async def run_server():
         server = MCPServer()
         await server.run()
-    
+
     asyncio.run(run_server())
 
 
