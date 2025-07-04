@@ -109,9 +109,70 @@ jobs:
 
           ## Installation
 
-          1. Download the appropriate binary for your platform
+          1. Download the appropriate binary for your platform below
           2. Make it executable (on macOS/Linux): `chmod +x whoismcp-server-*`
-          3. Run the server: `./whoismcp-server-*`
+          3. Place it in a convenient location (e.g., `/usr/local/bin` or `~/bin`)
+
+          ## MCP Configuration
+
+          Add the WhoisMCP server to your Claude Desktop configuration file:
+
+          **macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
+          **Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
+
+          Edit the configuration file and add the following to the `mcpServers` object:
+
+          ```json
+          {
+            "mcpServers": {
+              // ... your existing MCP servers ...
+              "whoismcp": {
+                "command": "/path/to/whoismcp-server",
+                "args": [],
+                "env": {}
+              }
+            }
+          }
+          ```
+
+          **Important**:
+          - Replace `/path/to/whoismcp-server` with the actual path to your downloaded binary
+          - If you have other MCP servers already configured, add the `"whoismcp"` entry after them (don't forget the comma before it)
+          - On Windows, use forward slashes or escaped backslashes: `"C:/path/to/whoismcp-server.exe"` or `"C:\\path\\to\\whoismcp-server.exe"`
+
+          ## Environment Variables (Optional)
+
+          You can customize the server behavior by adding environment variables to the `env` object:
+
+          ```json
+          "whoismcp": {
+            "command": "/path/to/whoismcp-server",
+            "args": [],
+            "env": {
+              "WHOIS_TIMEOUT": "60",
+              "RDAP_TIMEOUT": "60",
+              "CACHE_TTL": "7200",
+              "LOG_LEVEL": "INFO"
+            }
+          }
+          ```
+
+          Available environment variables:
+          - `WHOIS_TIMEOUT`: Whois query timeout in seconds (default: 30)
+          - `RDAP_TIMEOUT`: RDAP query timeout in seconds (default: 30)
+          - `CACHE_TTL`: Cache time-to-live in seconds (default: 3600)
+          - `CACHE_MAX_SIZE`: Maximum cache entries (default: 1000)
+          - `LOG_LEVEL`: Logging level - DEBUG, INFO, WARNING, ERROR (default: INFO)
+
+          ## Verification
+
+          After updating the configuration:
+          1. Restart Claude Desktop
+          2. Look for "whoismcp" in the MCP servers list
+          3. Test with queries like:
+             - "Look up the domain example.com"
+             - "Get RDAP info for google.com"
+             - "Check whois for IP 8.8.8.8"
 
           ## Supported Platforms
 
@@ -119,18 +180,13 @@ jobs:
           - **macOS**: x86_64 (Intel) and arm64 (Apple Silicon)
           - **Windows**: x86_64
 
-          ## Usage
+          ## Troubleshooting
 
-          The server communicates via stdin/stdout using the Model Context Protocol.
-
-          ### Environment Variables
-
-          - `BIND_HOST`: Host to bind to (default: 0.0.0.0)
-          - `BIND_PORT`: Port to bind to (default: 5001)
-          - `WHOIS_TIMEOUT`: Whois query timeout in seconds (default: 30)
-          - `RDAP_TIMEOUT`: RDAP query timeout in seconds (default: 30)
-          - `CACHE_TTL`: Cache time-to-live in seconds (default: 3600)
-          - `LOG_LEVEL`: Logging level (default: INFO)
+          If the server doesn't appear in Claude:
+          1. Check that the binary path is correct in the config
+          2. Ensure the binary has execute permissions (macOS/Linux)
+          3. Check Claude's logs for any error messages
+          4. Try running the binary directly to test: `./whoismcp-server --help`
 
           See the [README](https://github.com/${{ github.repository }}) for full documentation.
       env:
