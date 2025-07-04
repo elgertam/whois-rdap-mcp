@@ -1,218 +1,215 @@
 name: Build and Release
 
 on:
-push:
-tags:
-- ‘v*’
-workflow_dispatch:
-inputs:
-version:
-description: ‘Version to build (e.g., v1.0.0)’
-required: true
-default: ‘v1.0.0’
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to build (e.g., v1.0.0)'
+        required: true
+        default: 'v1.0.0'
 
 jobs:
-build:
-strategy:
-fail-fast: false  # Continue building other platforms even if one fails
-matrix:
-include:
-- os: ubuntu-latest
-name: linux
-artifact_name: whoismcp-server-linux-x86_64
-- os: windows-latest
-name: windows
-artifact_name: whoismcp-server-windows-x86_64.exe
-- os: macos-13  # Intel runner - macOS 13
-name: macos-x86_64
-artifact_name: whoismcp-server-macos-x86_64
-- os: macos-14  # Apple Silicon runner - macOS 14
-name: macos-arm64
-artifact_name: whoismcp-server-macos-arm64
+  build:
+    strategy:
+      fail-fast: false  # Continue building other platforms even if one fails
+      matrix:
+        include:
+          - os: ubuntu-latest
+            name: linux
+            artifact_name: whoismcp-server-linux-x86_64
+          - os: windows-latest
+            name: windows
+            artifact_name: whoismcp-server-windows-x86_64.exe
+          - os: macos-13  # Intel runner - macOS 13
+            name: macos-x86_64
+            artifact_name: whoismcp-server-macos-x86_64
+          - os: macos-14  # Apple Silicon runner - macOS 14
+            name: macos-arm64
+            artifact_name: whoismcp-server-macos-arm64
 
-```
-runs-on: ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+        
+    - name: Install uv
+      uses: astral-sh/setup-uv@v5
+      with:
+        enable-cache: true
+        
+    - name: Install dependencies
+      run: |
+        uv pip install --system hatch pyinstaller
+        
+    - name: Install package dependencies
+      run: |
+        uv pip install --system -e .
+        
+    - name: Build with PyInstaller
+      run: |
+        pyinstaller whoismcp.spec
+        
+    - name: Rename binary
+      shell: bash
+      run: |
+        if [ "${{ matrix.name }}" == "windows" ]; then
+          mv dist/whoismcp-server.exe dist/${{ matrix.artifact_name }}
+        else
+          mv dist/whoismcp-server dist/${{ matrix.artifact_name }}
+        fi
+        
+    - name: Test binary
+      shell: bash
+      run: |
+        if [ "${{ matrix.name }}" == "windows" ]; then
+          dist/${{ matrix.artifact_name }} --help
+        else
+          dist/${{ matrix.artifact_name }} --help
+        fi
+        
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ matrix.artifact_name }}
+        path: dist/${{ matrix.artifact_name }}
+        retention-days: 30
 
-steps:
-- uses: actions/checkout@v4
-
-- name: Set up Python
-  uses: actions/setup-python@v5
-  with:
-    python-version: '3.11'
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
     
-- name: Install uv
-  uses: astral-sh/setup-uv@v5
-  with:
-    enable-cache: true
+    permissions:
+      contents: write
+      
+    steps:
+    - uses: actions/checkout@v4
     
-- name: Install dependencies
-  run: |
-    uv pip install --system hatch pyinstaller
-    
-- name: Install package dependencies
-  run: |
-    uv pip install --system -e .
-    
-- name: Build with PyInstaller
-  run: |
-    pyinstaller whoismcp.spec
-    
-- name: Rename binary
-  shell: bash
-  run: |
-    if [ "${{ matrix.name }}" == "windows" ]; then
-      mv dist/whoismcp-server.exe dist/${{ matrix.artifact_name }}
-    else
-      mv dist/whoismcp-server dist/${{ matrix.artifact_name }}
-    fi
-    
-- name: Test binary
-  shell: bash
-  run: |
-    if [ "${{ matrix.name }}" == "windows" ]; then
-      dist/${{ matrix.artifact_name }} --help
-    else
-      dist/${{ matrix.artifact_name }} --help
-    fi
-    
-- name: Upload artifact
-  uses: actions/upload-artifact@v4
-  with:
-    name: ${{ matrix.artifact_name }}
-    path: dist/${{ matrix.artifact_name }}
-    retention-days: 30
-```
-
-release:
-needs: build
-runs-on: ubuntu-latest
-if: startsWith(github.ref, ‘refs/tags/’)
-
-```
-permissions:
-  contents: write
-  
-steps:
-- uses: actions/checkout@v4
-
-- name: Download all artifacts
-  uses: actions/download-artifact@v4
-  with:
-    path: dist/
-    
-- name: Create Release
-  uses: softprops/action-gh-release@v1
-  with:
-    files: dist/**/*
-    draft: false
-    prerelease: false
-    body: |
-      # WhoisMCP Server Release
-      
-      ## Installation
-      
-      ### 🍎 macOS Users - Choose the Right Version!
-      
-      **Check your Mac type first:**
-      ```bash
-      uname -m
-      ```
-      
-      - **Apple Silicon (M1/M2/M3)**: Download `whoismcp-server-macos-arm64`
-      - **Intel Macs**: Download `whoismcp-server-macos-x86_64`
-      
-      ⚠️ **Getting "bad CPU type" error?** You downloaded the wrong architecture!
-      
-      ### 🪟 Windows Users
-      
-      Download `whoismcp-server-windows-x86_64.exe`
-      
-      ### 🐧 Linux Users
-      
-      Download `whoismcp-server-linux-x86_64`
-      
-      ## Setup Instructions
-      
-      1. Download the appropriate binary for your platform
-      2. Make it executable (on macOS/Linux): `chmod +x whoismcp-server-*`
-      3. Place it in a convenient location (e.g., `/usr/local/bin` or `~/bin`)
-      
-      ## MCP Configuration
-      
-      Add the WhoisMCP server to your Claude Desktop configuration file:
-      
-      **macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
-      **Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
-      
-      Edit the configuration file and add the following to the `mcpServers` object:
-      
-      ```json
-      {
-        "mcpServers": {
-          // ... your existing MCP servers ...
+    - name: Download all artifacts
+      uses: actions/download-artifact@v4
+      with:
+        path: dist/
+        
+    - name: Create Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: dist/**/*
+        draft: false
+        prerelease: false
+        body: |
+          # WhoisMCP Server Release
+          
+          ## Installation
+          
+          ### 🍎 macOS Users - Choose the Right Version!
+          
+          **Check your Mac type first:**
+          ```bash
+          uname -m
+          ```
+          
+          - **Apple Silicon (M1/M2/M3)**: Download `whoismcp-server-macos-arm64`
+          - **Intel Macs**: Download `whoismcp-server-macos-x86_64`
+          
+          ⚠️ **Getting "bad CPU type" error?** You downloaded the wrong architecture!
+          
+          ### 🪟 Windows Users
+          
+          Download `whoismcp-server-windows-x86_64.exe`
+          
+          ### 🐧 Linux Users
+          
+          Download `whoismcp-server-linux-x86_64`
+          
+          ## Setup Instructions
+          
+          1. Download the appropriate binary for your platform
+          2. Make it executable (on macOS/Linux): `chmod +x whoismcp-server-*`
+          3. Place it in a convenient location (e.g., `/usr/local/bin` or `~/bin`)
+          
+          ## MCP Configuration
+          
+          Add the WhoisMCP server to your Claude Desktop configuration file:
+          
+          **macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
+          **Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
+          
+          Edit the configuration file and add the following to the `mcpServers` object:
+          
+          ```json
+          {
+            "mcpServers": {
+              // ... your existing MCP servers ...
+              "whoismcp": {
+                "command": "/path/to/whoismcp-server",
+                "args": [],
+                "env": {}
+              }
+            }
+          }
+          ```
+          
+          **Important**: 
+          - Replace `/path/to/whoismcp-server` with the actual path to your downloaded binary
+          - If you have other MCP servers already configured, add the `"whoismcp"` entry after them (don't forget the comma before it)
+          - On Windows, use forward slashes or escaped backslashes: `"C:/path/to/whoismcp-server.exe"` or `"C:\\path\\to\\whoismcp-server.exe"`
+          
+          ## Environment Variables (Optional)
+          
+          You can customize the server behavior by adding environment variables to the `env` object:
+          
+          ```json
           "whoismcp": {
             "command": "/path/to/whoismcp-server",
             "args": [],
-            "env": {}
+            "env": {
+              "WHOIS_TIMEOUT": "60",
+              "RDAP_TIMEOUT": "60",
+              "CACHE_TTL": "7200",
+              "LOG_LEVEL": "INFO"
+            }
           }
-        }
-      }
-      ```
-      
-      **Important**: 
-      - Replace `/path/to/whoismcp-server` with the actual path to your downloaded binary
-      - If you have other MCP servers already configured, add the `"whoismcp"` entry after them (don't forget the comma before it)
-      - On Windows, use forward slashes or escaped backslashes: `"C:/path/to/whoismcp-server.exe"` or `"C:\\path\\to\\whoismcp-server.exe"`
-      
-      ## Environment Variables (Optional)
-      
-      You can customize the server behavior by adding environment variables to the `env` object:
-      
-      ```json
-      "whoismcp": {
-        "command": "/path/to/whoismcp-server",
-        "args": [],
-        "env": {
-          "WHOIS_TIMEOUT": "60",
-          "RDAP_TIMEOUT": "60",
-          "CACHE_TTL": "7200",
-          "LOG_LEVEL": "INFO"
-        }
-      }
-      ```
-      
-      Available environment variables:
-      - `WHOIS_TIMEOUT`: Whois query timeout in seconds (default: 30)
-      - `RDAP_TIMEOUT`: RDAP query timeout in seconds (default: 30)
-      - `CACHE_TTL`: Cache time-to-live in seconds (default: 3600)
-      - `CACHE_MAX_SIZE`: Maximum cache entries (default: 1000)
-      - `LOG_LEVEL`: Logging level - DEBUG, INFO, WARNING, ERROR (default: INFO)
-      
-      ## Verification
-      
-      After updating the configuration:
-      1. Restart Claude Desktop
-      2. Look for "whoismcp" in the MCP servers list
-      3. Test with queries like:
-         - "Look up the domain example.com"
-         - "Get RDAP info for google.com"
-         - "Check whois for IP 8.8.8.8"
-      
-      ## Supported Platforms
-      
-      - **Linux**: x86_64
-      - **macOS**: x86_64 (Intel) and arm64 (Apple Silicon)
-      - **Windows**: x86_64
-      
-      ## Troubleshooting
-      
-      If the server doesn't appear in Claude:
-      1. Check that the binary path is correct in the config
-      2. Ensure the binary has execute permissions (macOS/Linux)
-      3. Check Claude's logs for any error messages
-      4. Try running the binary directly to test: `./whoismcp-server --help`
-      
-      See the [README](https://github.com/${{ github.repository }}) for full documentation.
-  env:
-    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ```
+          
+          Available environment variables:
+          - `WHOIS_TIMEOUT`: Whois query timeout in seconds (default: 30)
+          - `RDAP_TIMEOUT`: RDAP query timeout in seconds (default: 30)
+          - `CACHE_TTL`: Cache time-to-live in seconds (default: 3600)
+          - `CACHE_MAX_SIZE`: Maximum cache entries (default: 1000)
+          - `LOG_LEVEL`: Logging level - DEBUG, INFO, WARNING, ERROR (default: INFO)
+          
+          ## Verification
+          
+          After updating the configuration:
+          1. Restart Claude Desktop
+          2. Look for "whoismcp" in the MCP servers list
+          3. Test with queries like:
+             - "Look up the domain example.com"
+             - "Get RDAP info for google.com"
+             - "Check whois for IP 8.8.8.8"
+          
+          ## Supported Platforms
+          
+          - **Linux**: x86_64
+          - **macOS**: x86_64 (Intel) and arm64 (Apple Silicon)
+          - **Windows**: x86_64
+          
+          ## Troubleshooting
+          
+          If the server doesn't appear in Claude:
+          1. Check that the binary path is correct in the config
+          2. Ensure the binary has execute permissions (macOS/Linux)
+          3. Check Claude's logs for any error messages
+          4. Try running the binary directly to test: `./whoismcp-server --help`
+          
+          See the [README](https://github.com/${{ github.repository }}) for full documentation.
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
