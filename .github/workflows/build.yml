@@ -14,6 +14,7 @@ on:
 jobs:
   build:
     strategy:
+      fail-fast: false  # Continue building other platforms even if one fails
       matrix:
         include:
           - os: ubuntu-latest
@@ -40,9 +41,9 @@ jobs:
         python-version: '3.11'
 
     - name: Install uv
-      run: |
-        curl -LsSf https://astral.sh/uv/install.sh | sh
-        echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+      uses: astral-sh/setup-uv@v5
+      with:
+        enable-cache: true
 
     - name: Install dependencies
       run: |
