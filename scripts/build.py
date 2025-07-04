@@ -61,7 +61,9 @@ def install_dependencies():
         subprocess.check_call(["uv", "pip", "install", "-e", "."])
     else:
         # Fallback to pip
-        subprocess.check_call([sys.executable, "-m", "pip", "install", "--upgrade", "pip"])
+        subprocess.check_call(
+            [sys.executable, "-m", "pip", "install", "--upgrade", "pip"]
+        )
         subprocess.check_call([sys.executable, "-m", "pip", "install", "pyinstaller"])
         subprocess.check_call([sys.executable, "-m", "pip", "install", "-e", "."])
 
@@ -98,7 +100,9 @@ def test_binary():
 
     try:
         # Test --help command
-        result = subprocess.run([str(binary_path), "--help"], capture_output=True, text=True)
+        result = subprocess.run(
+            [str(binary_path), "--help"], capture_output=True, text=True
+        )
         if result.returncode == 0:
             print("Binary test passed!")
             print("\nHelp output:")
@@ -163,7 +167,7 @@ def main():
     # Rename to platform-specific name
     final_binary = rename_binary()
     if final_binary:
-        print(f"\nBuild successful!")
+        print("\nBuild successful!")
         print(f"Binary location: {final_binary}")
         print(f"Binary size: {final_binary.stat().st_size / 1024 / 1024:.2f} MB")
     else:
