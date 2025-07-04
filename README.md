@@ -93,6 +93,12 @@ Add to your MCP client configuration:
 
 ```tree
 whoismcp/
+├── .github/
+│   └── workflows/
+│       └── build.yml       # GitHub Actions workflow
+├── scripts/
+│   ├── README.md           # Documentation for scripts
+│   └── build.py            # Build script
 ├── src/whoismcp/           # Main package
 │   ├── __init__.py         # Package exports
 │   ├── config.py           # Configuration management
@@ -112,8 +118,10 @@ whoismcp/
 │       ├── parsers.py
 │       └── rate_limiter.py
 ├── tests/                  # Test suite
+├── BUILD.md                # Build documentation
+├── README.md               # This file
 ├── pyproject.toml          # Package configuration
-└── README.md               # This file
+└── whoismcp.spec           # PyInstaller spec (stays in root)
 ```
 
 ## Configuration

@@ -1,0 +1,136 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to build (e.g., v1.0.0)'
+        required: true
+        default: 'v1.0.0'
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            name: linux
+            artifact_name: whoismcp-server-linux-x86_64
+          - os: windows-latest
+            name: windows
+            artifact_name: whoismcp-server-windows-x86_64.exe
+          - os: macos-latest
+            name: macos
+            artifact_name: whoismcp-server-macos-x86_64
+          - os: macos-14
+            name: macos-arm64
+            artifact_name: whoismcp-server-macos-arm64
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+
+    - name: Install uv
+      run: |
+        curl -LsSf https://astral.sh/uv/install.sh | sh
+        echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+
+    - name: Install dependencies
+      run: |
+        uv pip install --system hatch pyinstaller
+
+    - name: Install package dependencies
+      run: |
+        uv pip install --system -e .
+
+    - name: Build with PyInstaller
+      run: |
+        pyinstaller whoismcp.spec
+
+    - name: Rename binary
+      shell: bash
+      run: |
+        if [ "${{ matrix.name }}" == "windows" ]; then
+          mv dist/whoismcp-server.exe dist/${{ matrix.artifact_name }}
+        else
+          mv dist/whoismcp-server dist/${{ matrix.artifact_name }}
+        fi
+
+    - name: Test binary
+      shell: bash
+      run: |
+        if [ "${{ matrix.name }}" == "windows" ]; then
+          dist/${{ matrix.artifact_name }} --help
+        else
+          dist/${{ matrix.artifact_name }} --help
+        fi
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ matrix.artifact_name }}
+        path: dist/${{ matrix.artifact_name }}
+        retention-days: 30
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+
+    permissions:
+      contents: write
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Download all artifacts
+      uses: actions/download-artifact@v4
+      with:
+        path: dist/
+
+    - name: Create Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: dist/**/*
+        draft: false
+        prerelease: false
+        body: |
+          # WhoisMCP Server Release
+
+          ## Installation
+
+          1. Download the appropriate binary for your platform
+          2. Make it executable (on macOS/Linux): `chmod +x whoismcp-server-*`
+          3. Run the server: `./whoismcp-server-*`
+
+          ## Supported Platforms
+
+          - **Linux**: x86_64
+          - **macOS**: x86_64 (Intel) and arm64 (Apple Silicon)
+          - **Windows**: x86_64
+
+          ## Usage
+
+          The server communicates via stdin/stdout using the Model Context Protocol.
+
+          ### Environment Variables
+
+          - `BIND_HOST`: Host to bind to (default: 0.0.0.0)
+          - `BIND_PORT`: Port to bind to (default: 5001)
+          - `WHOIS_TIMEOUT`: Whois query timeout in seconds (default: 30)
+          - `RDAP_TIMEOUT`: RDAP query timeout in seconds (default: 30)
+          - `CACHE_TTL`: Cache time-to-live in seconds (default: 3600)
+          - `LOG_LEVEL`: Logging level (default: INFO)
+
+          See the [README](https://github.com/${{ github.repository }}) for full documentation.
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
