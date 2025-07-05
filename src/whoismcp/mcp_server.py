@@ -96,7 +96,32 @@ class MCPServer:
         ]
 
         # Define available resources
-        self.resources = []
+        self.resources = [
+            {
+                "uri": "whois://config",
+                "name": "Whois Server Configuration",
+                "description": "Current configuration for Whois servers and settings",
+                "mimeType": "application/json"
+            },
+            {
+                "uri": "rdap://config", 
+                "name": "RDAP Server Configuration",
+                "description": "Current configuration for RDAP servers and settings",
+                "mimeType": "application/json"
+            },
+            {
+                "uri": "cache://stats",
+                "name": "Cache Statistics",
+                "description": "Current cache usage and performance statistics",
+                "mimeType": "application/json"
+            },
+            {
+                "uri": "rate-limit://status",
+                "name": "Rate Limit Status",
+                "description": "Current rate limiting status and configuration",
+                "mimeType": "application/json"
+            }
+        ]
 
     def write_message(self, message: dict[str, Any]) -> None:
         """Write a message to stdout."""
@@ -306,51 +331,68 @@ class MCPServer:
         uri = params.get("uri", "")
 
         try:
-            if uri.startswith("whois://domain/"):
-                domain = uri.replace("whois://domain/", "")
-                result_dict = await self.whois_service.lookup_domain(domain)
+            if uri == "whois://config":
+                config_data = {
+                    "whois_timeout": self.config.whois_timeout,
+                    "whois_servers": getattr(self.whois_service, 'WHOIS_SERVERS', {}),
+                    "max_retries": self.config.max_retries,
+                    "retry_delay": self.config.retry_delay
+                }
                 return {
                     "contents": [
                         {
                             "uri": uri,
                             "mimeType": "application/json",
-                            "text": json.dumps(result_dict, indent=2, default=str),
+                            "text": json.dumps(config_data, indent=2, default=str),
                         }
                     ]
                 }
-            elif uri.startswith("whois://ip/"):
-                ip = uri.replace("whois://ip/", "")
-                result_dict = await self.whois_service.lookup_ip(ip)
+            elif uri == "rdap://config":
+                config_data = {
+                    "rdap_timeout": self.config.rdap_timeout,
+                    "rdap_servers": getattr(self.rdap_service, 'RDAP_SERVERS', {}),
+                    "max_connections": self.config.max_connections,
+                    "max_keepalive_connections": self.config.max_keepalive_connections
+                }
                 return {
                     "contents": [
                         {
                             "uri": uri,
                             "mimeType": "application/json",
-                            "text": json.dumps(result_dict, indent=2, default=str),
+                            "text": json.dumps(config_data, indent=2, default=str),
                         }
                     ]
                 }
-            elif uri.startswith("rdap://domain/"):
-                domain = uri.replace("rdap://domain/", "")
-                result_dict = await self.rdap_service.lookup_domain(domain)
+            elif uri == "cache://stats":
+                stats_data = {
+                    "cache_size": len(self.cache_service._cache),
+                    "cache_max_size": self.config.cache_max_size,
+                    "cache_ttl": self.config.cache_ttl,
+                    "cache_cleanup_interval": self.config.cache_cleanup_interval
+                }
                 return {
                     "contents": [
                         {
                             "uri": uri,
                             "mimeType": "application/json",
-                            "text": json.dumps(result_dict, indent=2, default=str),
+                            "text": json.dumps(stats_data, indent=2, default=str),
                         }
                     ]
                 }
-            elif uri.startswith("rdap://ip/"):
-                ip = uri.replace("rdap://ip/", "")
-                result_dict = await self.rdap_service.lookup_ip(ip)
+            elif uri == "rate-limit://status":
+                rate_limit_data = {
+                    "global_rate_limit_per_second": self.config.global_rate_limit_per_second,
+                    "global_rate_limit_burst": self.config.global_rate_limit_burst,
+                    "client_rate_limit_per_second": self.config.client_rate_limit_per_second,
+                    "client_rate_limit_burst": self.config.client_rate_limit_burst,
+                    "active_clients": len(self.rate_limiter.client_buckets)
+                }
                 return {
                     "contents": [
                         {
                             "uri": uri,
                             "mimeType": "application/json",
-                            "text": json.dumps(result_dict, indent=2, default=str),
+                            "text": json.dumps(rate_limit_data, indent=2, default=str),
                         }
                     ]
                 }

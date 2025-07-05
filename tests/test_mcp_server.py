@@ -18,7 +18,12 @@ class TestMCPServer:
         """Create a test MCP server instance."""
         server = MCPServer()
         await server.cache_service.start()
-        return server
+        yield server
+        # Cleanup
+        await server.cache_service.close()
+        await server.rate_limiter.close()
+        if server.rdap_service:
+            await server.rdap_service.close()
 
     @pytest.mark.asyncio
     async def test_initialize(self, server):
@@ -54,10 +59,10 @@ class TestMCPServer:
         assert len(resources) == 4
 
         uris = [resource["uri"] for resource in resources]
-        assert "whois://domain/{domain}" in uris
-        assert "whois://ip/{ip}" in uris
-        assert "rdap://domain/{domain}" in uris
-        assert "rdap://ip/{ip}" in uris
+        assert "whois://config" in uris
+        assert "rdap://config" in uris
+        assert "cache://stats" in uris
+        assert "rate-limit://status" in uris
 
     @pytest.mark.asyncio
     async def test_whois_lookup_missing_target(self, server):

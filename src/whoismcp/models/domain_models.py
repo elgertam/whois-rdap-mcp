@@ -24,7 +24,7 @@ class WhoisResult(BaseModel):
         default_factory=datetime.utcnow, description="Timestamp of the lookup"
     )
 
-    model_config = ConfigDict(json_encoders={datetime: lambda v: v.isoformat()})
+    model_config = ConfigDict()
 
 
 class RDAPResult(BaseModel):
@@ -42,7 +42,7 @@ class RDAPResult(BaseModel):
         default_factory=datetime.utcnow, description="Timestamp of the lookup"
     )
 
-    model_config = ConfigDict(json_encoders={datetime: lambda v: v.isoformat()})
+    model_config = ConfigDict()
 
 
 class DomainInfo(BaseModel):
@@ -62,9 +62,7 @@ class DomainInfo(BaseModel):
     status: list[str] = Field(default_factory=list)
     dnssec: str | None = None
 
-    model_config = ConfigDict(
-        json_encoders={datetime: lambda v: v.isoformat() if v else None}
-    )
+    model_config = ConfigDict()
 
 
 class IPInfo(BaseModel):
@@ -81,6 +79,4 @@ class IPInfo(BaseModel):
     registration_date: datetime | None = None
     updated_date: datetime | None = None
 
-    model_config = ConfigDict(
-        json_encoders={datetime: lambda v: v.isoformat() if v else None}
-    )
+    model_config = ConfigDict()

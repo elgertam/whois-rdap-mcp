@@ -168,6 +168,14 @@ Changelog:
   * Enhanced RDAP logging to track redirects and debug connection issues
   * ARIN and other registry redirects now properly followed automatically
   * Server ready for production deployment with Claude Desktop and other MCP clients
+
+- July 4, 2025. License and test suite improvements
+  * Added MIT License file for proper open-source distribution
+  * Fixed unit test suite - all 23 tests now pass without errors
+  * Resolved Pydantic deprecation warnings by removing json_encoders
+  * Implemented proper MCP resources with configuration and status endpoints
+  * Added comprehensive test cleanup to prevent async task warnings
+  * Updated package version to 0.3.4 with fixed dependency resolution
 ```
 
 ## User Preferences
